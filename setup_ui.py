@@ -209,6 +209,57 @@ def action_install_env() -> dict:
     return {"ok": True, "log": "\n".join(x for x in logs if x)}
 
 
+def action_tailscale_install() -> dict:
+    if _find_tailscale():
+        return {"ok": True, "log": "Tailscale đã được cài đặt sẵn trên máy."}
+    winget = shutil.which("winget")
+    if not winget:
+        return {
+            "ok": False,
+            "log": "Máy chưa có winget. Hãy bấm nút 'Tải bộ cài Tailscale' (https://tailscale.com/download) để cài thủ công.",
+        }
+    rc, out, err = _run_cmd(
+        [winget, "install", "-e", "--id", "Tailscale.Tailscale", "--accept-package-agreements", "--accept-source-agreements"],
+        timeout=300,
+    )
+    combined = (out + "\n" + err).strip()[-2500:]
+    if rc == 0:
+        return {"ok": True, "log": "Đã cài đặt Tailscale thành công! Hãy bấm 'Đăng nhập Tailscale' ở bước tiếp theo.\n" + combined}
+    return {"ok": False, "log": combined or f"winget trả về mã lỗi {rc}"}
+
+
+def action_tailscale_login() -> dict:
+    ts = _find_tailscale()
+    if not ts:
+        return {"ok": False, "log": "Chưa cài Tailscale. Hãy cài Tailscale trước."}
+    ts_info = get_tailscale_info()
+    if ts_info["logged_in"]:
+        return {"ok": True, "log": f"Tailscale đã đăng nhập sẵn ({ts_info['dns_name'] or 'Running'})."}
+    gui = Path(r"C:\Program Files\Tailscale\tailscale-ipn.exe")
+    if gui.exists():
+        try:
+            sp.Popen([str(gui)], creationflags=CREATE_NO_WINDOW)
+        except Exception:
+            pass
+    rc, out, err = _run_cmd([ts, "login"], timeout=15)
+    combined = (out + "\n" + err).strip()
+    urls = re.findall(r"https://login\.tailscale\.com/\S+", combined)
+    if urls:
+        try:
+            webbrowser.open(urls[0])
+        except Exception:
+            pass
+        return {
+            "ok": True,
+            "log": f"Đã mở trình duyệt đăng nhập Tailscale:\n{urls[0]}\nSau khi đăng nhập xong, bấm 'Làm mới trạng thái'.",
+            "action_url": urls[0],
+        }
+    return {
+        "ok": rc == 0,
+        "log": combined or "Đã mở ứng dụng Tailscale. Hãy đăng nhập từ biểu tượng Tailscale dưới khay hệ thống rồi bấm 'Làm mới trạng thái'.",
+    }
+
+
 def action_tailscale_enable(mode: str, port: int) -> dict:
     ts = _find_tailscale()
     if not ts:
@@ -425,7 +476,18 @@ HTML_PAGE = r"""<!doctype html>
   </div>
 
   <div class="card">
-    <h2><span class="step">2</span> Cấu hình bảo mật &amp; Tailscale (.env)</h2>
+    <h2><span class="step">2</span> Cài đặt &amp; Đăng nhập Tailscale</h2>
+    <div class="hint">Tailscale giúp tạo đường dẫn HTTPS an toàn cho máy tính mà không cần mở port router hay thuê VPS. Sau khi đăng nhập, nhớ bật <b>MagicDNS</b> &amp; <b>HTTPS Certificates</b> trong Tailscale Admin.</div>
+    <div class="btns">
+      <button class="primary" onclick="runAction('/api/tailscale-install', {}, this)">Cài Tailscale tự động (winget)</button>
+      <button onclick="window.open('https://tailscale.com/download', '_blank')">Tải bộ cài thủ công</button>
+      <button class="success" onclick="runAction('/api/tailscale-login', {}, this)">Đăng nhập Tailscale</button>
+      <button onclick="window.open('https://login.tailscale.com/admin/dns', '_blank')">Mở trang bật MagicDNS &amp; HTTPS</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span> Cấu hình bảo mật &amp; Chế độ Tailscale (.env)</h2>
     <div class="form-grid">
       <div>
         <label>Chế độ Tailscale</label>
@@ -474,7 +536,7 @@ HTML_PAGE = r"""<!doctype html>
   </div>
 
   <div class="card">
-    <h2><span class="step">3</span> Điều khiển Server &amp; Kiểm thử</h2>
+    <h2><span class="step">4</span> Điều khiển Server &amp; Kiểm thử</h2>
     <div class="btns" style="margin-top:0">
       <button class="success" onclick="runAction('/api/start', {}, this)">Khởi chạy Server</button>
       <button class="danger" onclick="runAction('/api/stop', {}, this)">Dừng Server</button>
@@ -484,7 +546,7 @@ HTML_PAGE = r"""<!doctype html>
   </div>
 
   <div class="card">
-    <h2><span class="step">4</span> Kết nối AI Client (Copy 1-Click)</h2>
+    <h2><span class="step">5</span> Kết nối AI Client (Copy 1-Click)</h2>
     <label>MCP Endpoint URL</label>
     <div class="input-row" style="margin-bottom:14px">
       <div class="codebox endpoint" id="out-url" style="flex:1">Chưa phát hiện URL Tailscale...</div>
@@ -657,6 +719,10 @@ class SetupHandler(BaseHTTPRequestHandler):
 
         if self.path == "/api/install":
             self._send_json(action_install_env())
+        elif self.path == "/api/tailscale-install":
+            self._send_json(action_tailscale_install())
+        elif self.path == "/api/tailscale-login":
+            self._send_json(action_tailscale_login())
         elif self.path == "/api/save-env":
             write_env(body)
             self._send_json({"ok": True, "log": "Đã lưu cấu hình vào file .env."})
