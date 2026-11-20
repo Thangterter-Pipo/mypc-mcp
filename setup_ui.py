@@ -582,76 +582,254 @@ HTML_PAGE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MyPC MCP — Setup & Control Panel</title>
+<title>MyPC MCP — Control Center</title>
 <style>
   :root {
-    --bg: #0c0f16; --card: #151923; --border: #252c3b; --text: #e6edf3;
-    --muted: #8b949e; --accent: #3b82f6; --accent-h: #2563eb;
-    --ok: #22c55e; --warn: #f59e0b; --err: #ef4444; --input: #0b0e14;
+    --color-bg: #09090b;
+    --color-surface: #111217;
+    --color-surface-elevated: #171922;
+    --color-input: #0b0c10;
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-strong: rgba(255, 255, 255, 0.14);
+    --color-text: #f4f4f5;
+    --color-muted: #a1a1aa;
+    --color-primary: #6366f1;
+    --color-primary-hover: #4f46e5;
+    --color-accent: #38bdf8;
+    --color-success: #10b981;
+    --color-success-hover: #059669;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --radius-sm: 6px;
+    --radius-md: 9px;
+    --radius-lg: 12px;
+    --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
   }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 13px; }
-  .app { height: 100vh; display: flex; flex-direction: column; padding: 12px 16px; gap: 10px; max-width: 1440px; margin: 0 auto; }
-  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; flex-shrink: 0; }
+  html, body {
+    height: 100%; margin: 0; overflow: hidden;
+    font-family: var(--font-sans); font-size: 13px; line-height: 1.45;
+    color: var(--color-text);
+    background:
+      radial-gradient(900px 420px at 12% -10%, rgba(99, 102, 241, 0.14), transparent 60%),
+      radial-gradient(700px 360px at 88% -8%, rgba(56, 189, 248, 0.09), transparent 55%),
+      var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  .app {
+    height: 100vh; display: flex; flex-direction: column;
+    padding: 12px 16px; gap: 10px; max-width: 1480px; margin: 0 auto;
+  }
+  /* Top Navigation / Status Bar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: rgba(17, 18, 23, 0.86); backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+    padding: 8px 14px; flex-shrink: 0;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.3);
+  }
   .brand { display: flex; align-items: center; gap: 10px; }
-  .brand h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
-  .brand .tag { font-size: 11px; padding: 2px 7px; border-radius: 999px; background: rgba(59,130,246,.16); color: #60a5fa; font-weight: 600; }
-  .pills { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--input); border: 1px solid var(--border); font-size: 12px; font-weight: 500; white-space: nowrap; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-  .dot.ok { background: var(--ok); box-shadow: 0 0 7px var(--ok); }
-  .dot.warn { background: var(--warn); }
-  .dot.err { background: var(--err); }
-  .main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 10px; }
+  .logo {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35); flex-shrink: 0;
+  }
+  .brand-text { display: flex; align-items: baseline; gap: 8px; }
+  .brand h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .brand .badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+    background: rgba(99, 102, 241, 0.14); color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+  }
+  .pills { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+    border-radius: 999px; background: var(--color-input);
+    border: 1px solid var(--color-border); font-size: 11.5px; font-weight: 500;
+    color: var(--color-text); white-space: nowrap;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot.ok { background: var(--color-success); box-shadow: 0 0 8px rgba(16, 185, 129, 0.8); }
+  .dot.warn { background: var(--color-warning); }
+  .dot.err { background: var(--color-danger); }
+
+  /* Main 2-Column Cockpit */
+  .main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 10px; }
   .col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 11px; padding: 10px 13px; display: flex; flex-direction: column; gap: 7px; }
+  .card {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); padding: 11px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  }
   .card.grow { flex: 1; min-height: 0; }
   .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .card h2 { margin: 0; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
-  .step { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; background: rgba(59,130,246,.18); color: #60a5fa; font-size: 11.5px; font-weight: 700; flex-shrink: 0; }
-  .row-setup { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; background: var(--input); border: 1px solid var(--border); border-radius: 8px; flex-wrap: wrap; }
-  .row-setup .lbl { font-weight: 600; font-size: 12.5px; }
-  .row-setup .sub { font-size: 11.5px; color: var(--muted); }
+  .card h2 {
+    margin: 0; font-size: 13px; font-weight: 600; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 8px; color: var(--color-text);
+  }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    background: rgba(99, 102, 241, 0.16); color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.25); flex-shrink: 0;
+  }
+
+  /* Setup Rows */
+  .row-setup {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 8px 11px; background: var(--color-input);
+    border: 1px solid var(--color-border); border-radius: var(--radius-md); flex-wrap: wrap;
+  }
+  .row-meta { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .row-icon {
+    width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+    background: var(--color-surface-elevated); border: 1px solid var(--color-border);
+    display: inline-flex; align-items: center; justify-content: center; color: #a5b4fc;
+  }
+  .row-setup .lbl { font-weight: 600; font-size: 12.5px; color: var(--color-text); }
+  .row-setup .sub { font-size: 11.5px; color: var(--color-muted); }
+
+  /* Forms */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
   .span2 { grid-column: span 2; }
-  label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; font-weight: 500; }
-  input, select { width: 100%; padding: 6px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--input); color: var(--text); font-size: 12.5px; }
-  input:focus, select:focus { outline: none; border-color: var(--accent); }
-  .input-row { display: flex; gap: 4px; align-items: center; }
+  label { display: block; font-size: 11.5px; color: var(--color-muted); margin-bottom: 4px; font-weight: 500; }
+  input {
+    width: 100%; padding: 7px 10px; border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border); background: var(--color-input);
+    color: var(--color-text); font-family: var(--font-sans); font-size: 12.5px;
+    transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
+  }
+  input.mono { font-family: var(--font-mono); font-size: 12px; }
+  input:focus-visible, button:focus-visible {
+    outline: 2px solid var(--color-primary); outline-offset: 2px;
+  }
+  input:focus { border-color: var(--color-primary); }
+  .input-row { display: flex; gap: 5px; align-items: center; }
   .input-row input { flex: 1; min-width: 0; }
-  .btns { display: flex; flex-wrap: wrap; gap: 6px; }
-  button { padding: 6px 11px; border-radius: 7px; border: 1px solid var(--border); background: #212736; color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer; transition: .12s; white-space: nowrap; }
-  button:hover { background: #2b3347; }
-  button:disabled { opacity: .5; cursor: wait; }
-  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  button.primary:hover { background: var(--accent-h); }
-  button.success { background: #16a34a; border-color: #16a34a; color: #fff; }
-  button.danger { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.4); color: #fca5a5; }
-  button.xs { padding: 5px 7px; font-size: 11px; }
-  .ctrl-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-  .ctrl-grid button { flex: 1 1 auto; }
-  .codebox { background: var(--input); border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px; font-family: Consolas, monospace; font-size: 11.5px; word-break: break-all; white-space: pre-wrap; line-height: 1.45; }
-  .endpoint { color: #93c5fd; font-weight: 600; font-size: 12px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tabs { display: flex; gap: 6px; }
-  .tab { padding: 4px 10px; border-radius: 6px; font-size: 11.5px; background: var(--input); border: 1px solid var(--border); cursor: pointer; color: var(--muted); font-weight: 600; }
-  .tab.active { background: rgba(59,130,246,.18); border-color: var(--accent); color: #93c5fd; }
-  .prog-wrap { background: #0f131d; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; flex-shrink: 0; }
-  .prog-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 5px; gap: 8px; }
-  .prog-title { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .prog-pct { font-family: Consolas, monospace; font-weight: 700; color: #60a5fa; flex-shrink: 0; }
-  .prog-track { width: 100%; height: 7px; background: #1e2433; border-radius: 999px; overflow: hidden; }
-  .prog-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 999px; transition: width .3s ease; }
-  .prog-bar.done { background: linear-gradient(90deg, #16a34a, #22c55e); }
-  .prog-bar.error { background: linear-gradient(90deg, #dc2626, #ef4444); }
-  .prog-stage { font-size: 11px; color: var(--muted); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .console { flex: 1; min-height: 60px; background: #080a0f; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-family: Consolas, monospace; font-size: 11.5px; color: #cbd5e1; overflow-y: auto; white-space: pre-wrap; line-height: 1.4; }
-  .banner { display: none; padding: 6px 10px; border-radius: 7px; font-size: 11.5px; background: rgba(245,158,11,.14); border: 1px solid rgba(245,158,11,.4); color: #fde68a; }
-  .banner a { color: #60a5fa; font-weight: 600; }
+
+  /* Buttons */
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .ctrl-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ctrl-grid button { flex: 1 1 auto; justify-content: center; }
+  button {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6.5px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface-elevated); color: var(--color-text);
+    font-family: var(--font-sans); font-size: 12px; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+    transition: background 150ms var(--ease), border-color 150ms var(--ease), transform 100ms var(--ease), opacity 150ms var(--ease);
+  }
+  button:hover:not(:disabled) { background: #222634; border-color: rgba(255,255,255,0.22); }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button:disabled { opacity: 0.55; cursor: wait; }
+  button.primary {
+    background: var(--color-primary); border-color: rgba(255,255,255,0.12); color: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  button.primary:hover:not(:disabled) { background: var(--color-primary-hover); }
+  button.success {
+    background: var(--color-success); border-color: rgba(255,255,255,0.12); color: #042f2e;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  button.success:hover:not(:disabled) { background: var(--color-success-hover); color: #fff; }
+  button.danger {
+    background: rgba(239, 68, 68, 0.14); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;
+  }
+  button.danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.24); border-color: rgba(239, 68, 68, 0.65); }
+  button.ghost { background: transparent; border-color: var(--color-border); color: var(--color-muted); }
+  button.ghost:hover:not(:disabled) { color: var(--color-text); background: var(--color-surface-elevated); }
+  button.xs { padding: 5px 8px; font-size: 11.5px; }
+  button.icon-btn { padding: 6px 7px; }
+  svg.ic { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+  /* Endpoint & Guide Box */
+  .endpoint-box {
+    flex: 1; min-width: 0; background: var(--color-input);
+    border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-sm);
+    padding: 7px 10px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    color: #7dd3fc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .guide-list {
+    margin: 0; padding: 8px 11px 8px 26px; background: var(--color-input);
+    border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    font-size: 12px; color: var(--color-muted); line-height: 1.55;
+  }
+  .guide-list b { color: var(--color-text); font-weight: 600; }
+
+  /* Right Column: Terminal + Progress */
+  .term-card { padding: 0; overflow: hidden; }
+  .term-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 9px 13px; background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--color-border); flex-shrink: 0;
+  }
+  .term-title { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
+  .live-tag {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700;
+    padding: 2px 7px; border-radius: 999px; letter-spacing: 0.04em;
+    background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+  .term-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px 12px; gap: 9px; }
+  .prog-wrap {
+    background: var(--color-input); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); padding: 9px 11px; flex-shrink: 0;
+  }
+  .prog-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 6px; gap: 8px; }
+  .prog-title { font-weight: 600; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prog-pct { font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: #a5b4fc; flex-shrink: 0; }
+  .prog-track { width: 100%; height: 7px; background: #1e2230; border-radius: 999px; overflow: hidden; }
+  .prog-bar {
+    height: 100%; width: 0%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    transition: width 280ms var(--ease);
+  }
+  .prog-bar.running {
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+  .prog-bar.done { background: linear-gradient(90deg, #059669, #34d399); }
+  .prog-bar.error { background: linear-gradient(90deg, #dc2626, #f87171); }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+  .prog-stage { font-size: 11.5px; color: var(--color-muted); margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .console {
+    flex: 1; min-height: 80px; background: #07080c;
+    border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    padding: 10px 12px; font-family: var(--font-mono); font-size: 11.5px;
+    color: #d4d4d8; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;
+  }
+  .console::-webkit-scrollbar { width: 6px; }
+  .console::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 999px; }
+
+  .banner {
+    display: none; padding: 7px 10px; border-radius: var(--radius-sm); font-size: 12px;
+    background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #fde68a;
+  }
+  .banner a { color: #7dd3fc; font-weight: 600; }
+
+  /* Floating Toast */
+  .toast {
+    position: fixed; right: 18px; bottom: 18px; z-index: 50;
+    background: #181b25; color: var(--color-text);
+    border: 1px solid rgba(99, 102, 241, 0.4); border-radius: var(--radius-md);
+    padding: 8px 14px; font-size: 12.5px; font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    opacity: 0; transform: translateY(8px); pointer-events: none;
+    transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+  }
   @media (max-width: 960px) {
     html, body { overflow: auto; }
     .app { height: auto; }
     .main { grid-template-columns: 1fr; }
-    .ctrl-grid { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
@@ -659,111 +837,179 @@ HTML_PAGE = r"""<!doctype html>
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <h1>MyPC MCP</h1>
-      <span class="tag">127.0.0.1 Only</span>
+      <div class="logo" aria-hidden="true">
+        <svg class="ic" viewBox="0 0 24 24" style="color:#fff;width:16px;height:16px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>MyPC MCP</h1>
+        <span class="badge">Web AI &middot; Tailscale Funnel</span>
+      </div>
     </div>
     <div class="pills">
       <div class="pill" id="st-py"><span class="dot warn"></span>Python...</div>
       <div class="pill" id="st-ts"><span class="dot warn"></span>Tailscale...</div>
       <div class="pill" id="st-srv"><span class="dot warn"></span>Server...</div>
       <div class="pill" id="st-env"><span class="dot warn"></span>.env...</div>
-      <button class="xs" onclick="refreshStatus()">Làm mới</button>
+      <button class="xs ghost" onclick="refreshStatus()" aria-label="Làm mới trạng thái">
+        <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+        Làm mới
+      </button>
     </div>
   </header>
 
-  <div class="main">
+  <main class="main">
     <div class="col">
-      <div class="card">
-        <h2><span class="step">1</span> Chuẩn bị Python &amp; Tailscale</h2>
+      <section class="card">
+        <h2><span class="step-num">1</span> Chuẩn bị Python &amp; Tailscale</h2>
         <div class="row-setup">
-          <div><div class="lbl">Môi trường Python</div><div class="sub">Tạo .venv, cài thư viện &amp; sinh .env</div></div>
-          <button class="primary" onclick="runAction('/api/install', {}, this)">Cài .venv &amp; Thư viện</button>
+          <div class="row-meta">
+            <span class="row-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+            <div><div class="lbl">Môi trường Python</div><div class="sub">Tạo .venv, cài gói phụ thuộc &amp; sinh .env</div></div>
+          </div>
+          <button class="primary" onclick="runAction('/api/install', {}, this)">
+            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Cài .venv &amp; Thư viện
+          </button>
         </div>
         <div class="row-setup">
-          <div><div class="lbl">Tailscale (HTTPS không cần VPS)</div><div class="sub">Tải trực tiếp bộ cài chính thức, đăng nhập &amp; bật MagicDNS</div></div>
+          <div class="row-meta">
+            <span class="row-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+            <div><div class="lbl">Tailscale HTTPS</div><div class="sub">Tải bộ cài chính thức, đăng nhập &amp; bật MagicDNS</div></div>
+          </div>
           <div class="btns">
-            <button class="primary" onclick="runAction('/api/tailscale-install', {}, this)">Tải &amp; Cài Tailscale</button>
+            <button class="primary" onclick="runAction('/api/tailscale-install', {}, this)">
+              <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Tải &amp; Cài
+            </button>
             <button class="success" onclick="runAction('/api/tailscale-login', {}, this)">Đăng nhập</button>
-            <button onclick="window.open('https://login.tailscale.com/admin/dns', '_blank')">MagicDNS</button>
-            <button onclick="window.open('https://tailscale.com/download', '_blank')">Tải tay</button>
+            <button class="ghost" onclick="window.open('https://login.tailscale.com/admin/dns', '_blank')">MagicDNS</button>
+            <button class="ghost" onclick="window.open('https://tailscale.com/download', '_blank')">Tải tay</button>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="card">
-        <h2><span class="step">2</span> Cấu hình kết nối AI Web (.env &amp; Tailscale Funnel)</h2>
+      <section class="card">
+        <h2><span class="step-num">2</span> Cấu hình bảo mật &amp; Tailscale Funnel</h2>
         <div class="form-grid">
           <div class="span2">
-            <label>Consent PIN (mã bảo mật nhập khi duyệt ChatGPT / Claude / Gemini Web)</label>
+            <label for="f-pin">Consent PIN (mã xác nhận khi duyệt ChatGPT / Claude / Gemini Web)</label>
             <div class="input-row">
-              <input id="f-pin" type="password" placeholder="Nhập PIN mạnh...">
-              <button class="xs" onclick="toggleVis('f-pin')">Hiện</button>
-              <button class="xs" onclick="genSecret('f-pin', 12)">Sinh mới</button>
-              <button class="xs" onclick="copyVal('f-pin')">Copy</button>
+              <input id="f-pin" class="mono" type="password" placeholder="Nhập mã PIN mạnh...">
+              <button class="xs icon-btn" onclick="toggleVis('f-pin')" aria-label="Hiện hoặc ẩn PIN" title="Hiện / Ẩn">
+                <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <button class="xs icon-btn" onclick="genSecret('f-pin', 12)" aria-label="Sinh PIN ngẫu nhiên" title="Sinh PIN mới">
+                <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+              </button>
+              <button class="xs icon-btn" onclick="copyVal('f-pin', 'Đã copy Consent PIN')" aria-label="Copy PIN" title="Copy PIN">
+                <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
             </div>
           </div>
           <div>
-            <label>Cổng cục bộ (Port)</label>
-            <input id="f-port" type="number" value="3080">
+            <label for="f-port">Cổng cục bộ (Port)</label>
+            <input id="f-port" class="mono" type="number" value="3080">
           </div>
           <div>
-            <label>Giới hạn ổ đĩa (vd: C:,D: — trống = tất cả)</label>
-            <input id="f-drives" placeholder="Tất cả ổ đĩa">
+            <label for="f-drives">Giới hạn ổ đĩa (vd: C:,D: &mdash; trống = tất cả)</label>
+            <input id="f-drives" class="mono" placeholder="Tất cả ổ đĩa">
           </div>
           <div class="span2">
-            <label>Tailscale Funnel HTTPS URL (tự nhận diện sau khi đăng nhập)</label>
-            <input id="f-baseurl" placeholder="https://my-pc.tailnet.ts.net">
+            <label for="f-baseurl">Tailscale Funnel HTTPS URL (tự nhận diện)</label>
+            <input id="f-baseurl" class="mono" placeholder="https://my-pc.tailnet.ts.net">
           </div>
         </div>
         <div class="btns">
-          <button class="primary" onclick="saveConfig(this)">Lưu cấu hình .env</button>
-          <button class="success" onclick="enableTailscale(this)">Bật Tailscale Funnel (HTTPS cho AI Web)</button>
+          <button class="primary" onclick="saveConfig(this)">
+            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Lưu .env
+          </button>
+          <button class="success" onclick="enableTailscale(this)">
+            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Bật Tailscale Funnel (HTTPS)
+          </button>
         </div>
-        <div id="ts-banner" class="banner"></div>
-      </div>
+        <div id="ts-banner" class="banner" role="alert"></div>
+      </section>
 
-      <div class="card">
-        <h2><span class="step">3</span> Điều khiển Server</h2>
+      <section class="card">
+        <h2><span class="step-num">3</span> Điều khiển Server</h2>
         <div class="ctrl-grid">
-          <button id="btn-toggle-srv" class="success" onclick="toggleServer(this)">Khởi chạy Server</button>
-          <button onclick="runAction('/api/test', {}, this)">Test kết nối</button>
-          <button title="Tự động chạy ngầm MyPC MCP mỗi khi bạn mở máy và đăng nhập Windows" onclick="runAction('/api/autostart', {}, this)">Khởi động MCP cùng Windows</button>
+          <button id="btn-toggle-srv" class="success" onclick="toggleServer(this)">
+            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Khởi chạy Server</span>
+          </button>
+          <button onclick="runAction('/api/test', {}, this)">
+            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Test kết nối
+          </button>
+          <button title="Tự động chạy ngầm MyPC MCP mỗi khi bạn mở máy và đăng nhập Windows" onclick="runAction('/api/autostart', {}, this)">
+            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+            Khởi động MCP cùng Windows
+          </button>
         </div>
-      </div>
+      </section>
 
-      <div class="card grow">
-        <h2><span class="step">4</span> Kết nối AI Web (ChatGPT / Claude / Gemini)</h2>
+      <section class="card grow">
+        <h2><span class="step-num">4</span> Kết nối AI Web (ChatGPT / Claude / Gemini)</h2>
         <div class="input-row">
-          <div class="codebox endpoint" id="out-url">Chưa phát hiện URL Tailscale Funnel...</div>
-          <button class="xs primary" onclick="copyText(document.getElementById('out-url').textContent)">Copy URL</button>
+          <div class="endpoint-box" id="out-url">Chưa phát hiện URL Tailscale Funnel...</div>
+          <button class="xs primary" onclick="copyText(document.getElementById('out-url').textContent, 'Đã copy MCP Endpoint URL')">
+            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy URL
+          </button>
         </div>
-        <div class="codebox">1. Mở ChatGPT / Claude / Gemini Web → Thêm Custom MCP Connector.
-2. Đặt tên: mypc — Dán URL ở trên — Chọn xác thực: OAuth.
-3. Nhập Consent PIN (Bước 2) tại trang /consent → Allow Access.</div>
-      </div>
+        <ol class="guide-list">
+          <li>Mở <b>ChatGPT / Claude / Gemini Web</b> &rarr; Thêm <b>Custom MCP Connector</b>.</li>
+          <li>Đặt tên <b>mypc</b>, dán URL ở trên và chọn xác thực <b>OAuth</b>.</li>
+          <li>Nhập <b>Consent PIN</b> (Bước 2) tại trang <code>/consent</code> &rarr; <b>Allow Access</b>.</li>
+        </ol>
+      </section>
     </div>
 
     <div class="col">
-      <div class="card grow">
-        <div class="card-head">
-          <h2>Tiến trình &amp; Nhật ký (Console)</h2>
-          <button class="xs" onclick="logMsg('Đã xóa nhật ký.')">Xóa log</button>
-        </div>
-        <div class="prog-wrap" id="prog-wrap">
-          <div class="prog-head">
-            <span class="prog-title" id="prog-title">Sẵn sàng</span>
-            <span class="prog-pct" id="prog-pct">0%</span>
+      <section class="card grow term-card">
+        <div class="term-head">
+          <div class="term-title">
+            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24" style="color:#a5b4fc"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span>Tiến trình &amp; Nhật ký</span>
+            <span class="live-tag" id="live-tag">READY</span>
           </div>
-          <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
-          <div class="prog-stage" id="prog-stage">Bấm một nút cài đặt bên trái để theo dõi tiến trình trực tiếp.</div>
+          <div class="btns">
+            <button class="xs ghost" onclick="copyText(document.getElementById('console').textContent, 'Đã copy nhật ký')">Copy</button>
+            <button class="xs ghost" onclick="logMsg('Đã xóa nhật ký.')">Xóa log</button>
+          </div>
         </div>
-        <div class="console" id="console">Sẵn sàng. Làm lần lượt từ Bước 1 → Bước 4 ở cột bên trái.</div>
-      </div>
+        <div class="term-body">
+          <div class="prog-wrap" aria-live="polite">
+            <div class="prog-head">
+              <span class="prog-title" id="prog-title">Sẵn sàng</span>
+              <span class="prog-pct" id="prog-pct">0%</span>
+            </div>
+            <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
+            <div class="prog-stage" id="prog-stage">Bấm một tác vụ ở cột bên trái để theo dõi tiến trình trực tiếp.</div>
+          </div>
+          <div class="console" id="console" aria-live="polite">Sẵn sàng. Thực hiện lần lượt Bước 1 &rarr; Bước 4 ở cột bên trái.</div>
+        </div>
+      </section>
     </div>
-  </div>
+  </main>
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script>
+const ICON_PLAY = '<svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+const ICON_STOP = '<svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+let toastTimer = null;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
 function logMsg(text) {
   const el = document.getElementById('console');
   el.textContent = text;
@@ -773,16 +1019,17 @@ function toggleVis(id) {
   const el = document.getElementById(id);
   el.type = el.type === 'password' ? 'text' : 'password';
 }
-function copyText(txt) {
-  navigator.clipboard.writeText(txt).then(() => logMsg('Đã copy vào clipboard.'));
+function copyText(txt, msg) {
+  navigator.clipboard.writeText(txt).then(() => showToast(msg || 'Đã copy vào clipboard'));
 }
-function copyVal(id) { copyText(document.getElementById(id).value); }
+function copyVal(id, msg) { copyText(document.getElementById(id).value, msg); }
 function genSecret(id, bytes) {
   const arr = new Uint8Array(bytes);
   crypto.getRandomValues(arr);
   const s = btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   const el = document.getElementById(id);
   el.value = s; el.type = 'text';
+  showToast('Đã sinh mã PIN mới — nhớ bấm Lưu .env');
 }
 function updateClientSnippets() {
   const base = (document.getElementById('f-baseurl').value || '').replace(/\/+$/, '');
@@ -799,7 +1046,7 @@ async function refreshStatus() {
   isServerRunning = !!d.server_running;
   const toggleBtn = document.getElementById('btn-toggle-srv');
   if (toggleBtn) {
-    toggleBtn.textContent = isServerRunning ? 'Dừng Server' : 'Khởi chạy Server';
+    toggleBtn.innerHTML = isServerRunning ? `${ICON_STOP}<span>Dừng Server</span>` : `${ICON_PLAY}<span>Khởi chạy Server</span>`;
     toggleBtn.className = isServerRunning ? 'danger' : 'success';
   }
   document.getElementById('st-py').innerHTML =
@@ -824,7 +1071,9 @@ function setProgress(title, pct, stage, status) {
   document.getElementById('prog-stage').textContent = stage || '';
   const bar = document.getElementById('prog-bar');
   bar.style.width = `${pct}%`;
-  bar.className = 'prog-bar' + (status === 'done' ? ' done' : (status === 'error' ? ' error' : ''));
+  bar.className = 'prog-bar ' + (status === 'done' ? 'done' : (status === 'error' ? 'error' : 'running'));
+  const tag = document.getElementById('live-tag');
+  tag.textContent = status === 'running' ? 'RUNNING' : (status === 'done' ? 'DONE' : (status === 'error' ? 'ERROR' : 'READY'));
 }
 async function pollJob(jobId, btn) {
   try {
@@ -834,10 +1083,11 @@ async function pollJob(jobId, btn) {
       setProgress(j.title, j.progress, j.stage, j.status);
       if (j.log) logMsg(j.log);
       if (j.status === 'done' || j.status === 'error') {
+        showToast(j.status === 'done' ? 'Hoàn tất cài đặt!' : 'Có lỗi xảy ra, xem nhật ký');
         await refreshStatus();
         break;
       }
-      await new Promise(res => setTimeout(res, 400));
+      await new Promise(res => setTimeout(res, 350));
     }
   } catch (e) {
     logMsg('[LỖI] ' + e);
@@ -856,10 +1106,11 @@ async function runAction(path, body, btn) {
       return;
     }
     logMsg((d.ok ? '[OK] ' : '[LỖI] ') + (d.log || 'Hoàn tất.'));
+    showToast(d.ok ? 'Thao tác thành công' : 'Thao tác gặp lỗi');
     const banner = document.getElementById('ts-banner');
     if (d.action_url) {
       banner.style.display = 'block';
-      banner.innerHTML = `Cần thao tác trên Tailscale: <a href="${d.action_url}" target="_blank" rel="noopener">Mở liên kết Tailscale</a>, sau đó bấm Làm mới.`;
+      banner.innerHTML = `Cần xác nhận trên Tailscale: <a href="${d.action_url}" target="_blank" rel="noopener">Mở liên kết Tailscale</a>, sau đó bấm Làm mới.`;
     } else {
       banner.style.display = 'none';
     }
