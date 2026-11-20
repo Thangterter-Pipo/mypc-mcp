@@ -627,7 +627,8 @@ HTML_PAGE = r"""<!doctype html>
   button.success { background: #16a34a; border-color: #16a34a; color: #fff; }
   button.danger { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.4); color: #fca5a5; }
   button.xs { padding: 5px 7px; font-size: 11px; }
-  .ctrl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .ctrl-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ctrl-grid button { flex: 1 1 auto; }
   .codebox { background: var(--input); border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px; font-family: Consolas, monospace; font-size: 11.5px; word-break: break-all; white-space: pre-wrap; line-height: 1.45; }
   .endpoint { color: #93c5fd; font-weight: 600; font-size: 12px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tabs { display: flex; gap: 6px; }
@@ -728,7 +729,7 @@ HTML_PAGE = r"""<!doctype html>
           <button class="success" onclick="runAction('/api/start', {}, this)">Khởi chạy</button>
           <button class="danger" onclick="runAction('/api/stop', {}, this)">Dừng</button>
           <button onclick="runAction('/api/test', {}, this)">Test kết nối</button>
-          <button onclick="runAction('/api/autostart', {}, this)">Tự chạy Win</button>
+          <button title="Tự động chạy ngầm MyPC MCP mỗi khi bạn mở máy và đăng nhập Windows" onclick="runAction('/api/autostart', {}, this)">Khởi động MCP cùng Windows</button>
         </div>
       </div>
 
