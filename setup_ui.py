@@ -585,121 +585,120 @@ HTML_PAGE = r"""<!doctype html>
 <title>MyPC MCP — Control Center</title>
 <style>
   :root {
-    /* Industrial Hardware / Editorial Dark — zero AI purple/cyan gradients */
-    --bg: #0c0d0f;
-    --surface: #131519;
-    --surface-2: #1a1d23;
-    --surface-hover: #22262e;
-    --inset: #0a0b0d;
-    --border: rgba(255, 255, 255, 0.09);
-    --border-strong: rgba(255, 255, 255, 0.16);
-    --ink: #ecebe8;
-    --ink-muted: #8f939a;
-    --ink-dim: #62666e;
-    --accent: #ea580c;
-    --accent-hover: #c2410c;
-    --accent-soft: rgba(234, 88, 12, 0.14);
+    /* Refined Linear / Raycast / macOS Dark Slate */
+    --bg: #0b0d11;
+    --surface: #13161d;
+    --surface-2: #1a1e28;
+    --surface-hover: #222736;
+    --inset: #0e1016;
+    --border: rgba(255, 255, 255, 0.075);
+    --border-strong: rgba(255, 255, 255, 0.13);
+    --ink: #f3f4f6;
+    --ink-muted: #9ca3af;
+    --ink-dim: #6b7280;
+    --blue: #3b82f6;
+    --blue-soft: rgba(59, 130, 246, 0.14);
     --ok: #22c55e;
     --ok-soft: rgba(34, 197, 94, 0.14);
-    --warn: #eab308;
+    --warn: #f59e0b;
     --err: #ef4444;
     --err-soft: rgba(239, 68, 68, 0.14);
-    --r-sm: 5px;
-    --r-md: 8px;
+    --r-sm: 8px;
+    --r-md: 11px;
+    --r-lg: 15px;
     --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
     --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
-    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
   * { box-sizing: border-box; }
   html, body {
     height: 100%; margin: 0; overflow: hidden;
     font-family: var(--font-sans); font-size: 13px; line-height: 1.45;
-    color: var(--ink); background: var(--bg);
+    color: var(--ink);
+    background: radial-gradient(1100px 520px at 50% -18%, rgba(59, 130, 246, 0.09), transparent 65%), var(--bg);
     -webkit-font-smoothing: antialiased;
   }
   .num, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-  /* Full-viewport architectural frame (100dvh, zero page scroll) */
+  /* Full-viewport smooth app container (100dvh, zero page scroll) */
   .shell {
     height: 100dvh; display: flex; flex-direction: column;
-    max-width: 1480px; margin: 0 auto;
-    border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+    padding: 14px 18px; gap: 12px; max-width: 1440px; margin: 0 auto;
   }
 
-  /* Top Hardware Status Bar */
+  /* Refined Floating Topbar */
   .topbar {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 9px 16px; background: var(--surface);
-    border-bottom: 1px solid var(--border); flex-shrink: 0;
+    padding: 9px 15px; background: rgba(19, 22, 29, 0.85);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    box-shadow: var(--shadow); flex-shrink: 0;
   }
-  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand { display: flex; align-items: center; gap: 11px; }
   .mark {
-    width: 24px; height: 24px; border-radius: var(--r-sm);
-    background: var(--accent); color: #fff;
-    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 30px; height: 30px; border-radius: 9px;
+    background: linear-gradient(180deg, #252b3b 0%, #171b26 100%);
+    border: 1px solid var(--border-strong); color: #f8fafc;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.35);
+    flex-shrink: 0;
   }
-  .brand h1 {
-    margin: 0; font-size: 14px; font-weight: 700; letter-spacing: -0.02em;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .brand .meta {
-    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
-    color: var(--ink-muted); letter-spacing: 0.02em;
-  }
-  .telemetry { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .brand-title { display: flex; flex-direction: column; }
+  .brand h1 { margin: 0; font-size: 14.5px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+  .brand .sub { font-size: 11px; color: var(--ink-muted); }
+
+  .telemetry { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
   .chip {
-    display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px;
-    border-radius: var(--r-sm); background: var(--inset);
-    border: 1px solid var(--border); font-family: var(--font-mono);
-    font-size: 11px; color: var(--ink); white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px; padding: 4.5px 10px;
+    border-radius: 999px; background: var(--inset);
+    border: 1px solid var(--border); font-size: 11.5px; font-weight: 500;
+    color: var(--ink); white-space: nowrap;
   }
-  .led { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .led.ok { background: var(--ok); }
+  .led { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .led.ok { background: var(--ok); box-shadow: 0 0 8px rgba(34, 197, 94, 0.65); }
   .led.warn { background: var(--warn); }
   .led.err { background: var(--err); }
 
-  /* Two-column Split Workspace */
+  /* Two-Column Workspace */
   .workspace {
     flex: 1; min-height: 0; display: grid;
-    grid-template-columns: 1.12fr 0.88fr;
+    grid-template-columns: 1.12fr 0.88fr; gap: 12px;
   }
-  .pane-left {
-    display: flex; flex-direction: column; min-height: 0;
-    border-right: 1px solid var(--border);
-  }
-  .pane-right {
-    display: flex; flex-direction: column; min-height: 0;
-    background: var(--inset);
-  }
+  .pane-left { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .pane-right { display: flex; flex-direction: column; min-height: 0; }
 
-  /* Left Sections separated by crisp 1px structural rules (no card-soup) */
-  .sec {
-    padding: 11px 16px; border-bottom: 1px solid var(--border);
-    display: flex; flex-direction: column; gap: 8px;
+  /* Silky Elevated Cards */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 12px 15px;
+    display: flex; flex-direction: column; gap: 9px;
+    box-shadow: var(--shadow);
   }
-  .sec:last-child { border-bottom: 0; flex: 1; min-height: 0; }
-  .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .sec h2 {
-    margin: 0; font-size: 12px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.06em; color: var(--ink-muted);
-    display: flex; align-items: center; gap: 8px;
+  .card.grow { flex: 1; min-height: 0; }
+  .card h2 {
+    margin: 0; font-size: 13px; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--ink); display: flex; align-items: center; gap: 8px;
   }
-  .idx {
+  .step-dot {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 21px; height: 21px; border-radius: 7px;
     font-family: var(--font-mono); font-size: 11px; font-weight: 700;
-    color: var(--accent); font-variant-numeric: tabular-nums;
+    background: var(--blue-soft); color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.25); flex-shrink: 0;
   }
 
   /* Setup Rows */
   .task-row {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    padding: 7px 10px; background: var(--surface);
+    padding: 8px 11px; background: var(--inset);
     border: 1px solid var(--border); border-radius: var(--r-md); flex-wrap: wrap;
   }
-  .task-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .task-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .task-ic {
-    width: 26px; height: 26px; border-radius: var(--r-sm); flex-shrink: 0;
+    width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
     background: var(--surface-2); border: 1px solid var(--border);
-    display: inline-flex; align-items: center; justify-content: center; color: var(--ink-muted);
+    display: inline-flex; align-items: center; justify-content: center; color: #93c5fd;
   }
   .task-row .lbl { font-weight: 600; font-size: 12.5px; color: var(--ink); }
   .task-row .sub { font-size: 11.5px; color: var(--ink-muted); }
@@ -707,114 +706,143 @@ HTML_PAGE = r"""<!doctype html>
   /* Form Grid */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
   .span2 { grid-column: span 2; }
-  label { display: block; font-size: 11px; color: var(--ink-muted); margin-bottom: 4px; font-weight: 500; }
+  label { display: block; font-size: 11.5px; color: var(--ink-muted); margin-bottom: 4px; font-weight: 500; }
   input {
-    width: 100%; padding: 6.5px 9px; border-radius: var(--r-sm);
+    width: 100%; padding: 7px 10px; border-radius: var(--r-sm);
     border: 1px solid var(--border); background: var(--inset);
     color: var(--ink); font-family: var(--font-mono); font-size: 12px;
-    transition: border-color 140ms var(--ease);
+    transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
   }
   input::placeholder { color: var(--ink-dim); font-family: var(--font-sans); }
-  input:focus { border-color: var(--accent); outline: none; }
-  input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input:focus { border-color: rgba(59, 130, 246, 0.7); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14); outline: none; }
+  button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
   .input-row { display: flex; gap: 5px; align-items: center; }
   .input-row input { flex: 1; min-width: 0; }
 
-  /* Tactile Hardware Buttons */
-  .btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .ctrl-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  /* Refined Buttons (Vercel / Linear signature white primary + soft tinted accents) */
+  .btns { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+  .ctrl-row { display: flex; flex-wrap: wrap; gap: 7px; }
   .ctrl-row button { flex: 1 1 auto; justify-content: center; }
   button {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 11px; border-radius: var(--r-sm);
+    padding: 6.5px 12px; border-radius: var(--r-sm);
     border: 1px solid var(--border-strong);
     background: var(--surface-2); color: var(--ink);
     font-family: var(--font-sans); font-size: 12px; font-weight: 600;
     cursor: pointer; white-space: nowrap;
-    transition: background 140ms var(--ease), border-color 140ms var(--ease), transform 90ms var(--ease);
+    transition: background 160ms var(--ease), border-color 160ms var(--ease), transform 110ms var(--ease), box-shadow 160ms var(--ease);
   }
-  button:hover:not(:disabled) { background: var(--surface-hover); border-color: rgba(255,255,255,0.24); }
-  button:active:not(:disabled) { transform: translateY(1px); }
+  button:hover:not(:disabled) { background: var(--surface-hover); border-color: rgba(255,255,255,0.22); }
+  button:active:not(:disabled) { transform: scale(0.985); }
   button:disabled { opacity: 0.5; cursor: wait; }
-  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
-  button.success { background: var(--ok-soft); border-color: rgba(34, 197, 94, 0.45); color: #86efac; }
-  button.success:hover:not(:disabled) { background: rgba(34, 197, 94, 0.24); border-color: rgba(34, 197, 94, 0.7); }
-  button.danger { background: var(--err-soft); border-color: rgba(239, 68, 68, 0.45); color: #fca5a5; }
-  button.danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.24); border-color: rgba(239, 68, 68, 0.7); }
+  button.primary {
+    background: #f8fafc; border-color: #f8fafc; color: #09090b;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  button.primary:hover:not(:disabled) { background: #e2e8f0; border-color: #e2e8f0; }
+  button.accent {
+    background: var(--blue); border-color: rgba(255,255,255,0.12); color: #fff;
+    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  button.accent:hover:not(:disabled) { background: #2563eb; }
+  button.success {
+    background: rgba(34, 197, 94, 0.16); border-color: rgba(34, 197, 94, 0.38); color: #86efac;
+  }
+  button.success:hover:not(:disabled) { background: rgba(34, 197, 94, 0.25); border-color: rgba(34, 197, 94, 0.6); }
+  button.danger {
+    background: var(--err-soft); border-color: rgba(239, 68, 68, 0.38); color: #fca5a5;
+  }
+  button.danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.24); border-color: rgba(239, 68, 68, 0.6); }
   button.quiet { background: transparent; border-color: var(--border); color: var(--ink-muted); }
   button.quiet:hover:not(:disabled) { color: var(--ink); background: var(--surface-2); }
-  button.xs { padding: 4.5px 8px; font-size: 11.5px; }
-  button.ic-only { padding: 6px 7px; }
-  svg.ic { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  button.xs { padding: 5px 9px; font-size: 11.5px; }
+  button.ic-only { padding: 6.5px 7.5px; }
+  svg.ic { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
-  /* Endpoint & Step Guide */
+  /* Endpoint & Guide */
   .endpoint {
-    flex: 1; min-width: 0; background: var(--surface);
-    border: 1px solid var(--border-strong); border-radius: var(--r-sm);
-    padding: 6.5px 10px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;
-    color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 0; background: var(--inset);
+    border: 1px solid rgba(59, 130, 246, 0.26); border-radius: var(--r-sm);
+    padding: 7px 11px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    color: #93c5fd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .guide {
-    margin: 0; padding: 8px 12px 8px 24px; background: var(--surface);
+    margin: 0; padding: 8px 12px 8px 25px; background: var(--inset);
     border: 1px solid var(--border); border-radius: var(--r-sm);
     font-size: 12px; color: var(--ink-muted); line-height: 1.55;
   }
   .guide b { color: var(--ink); font-weight: 600; }
-  .guide code { font-family: var(--font-mono); font-size: 11px; color: var(--ink); background: var(--inset); padding: 1px 4px; border-radius: 3px; }
+  .guide code { font-family: var(--font-mono); font-size: 11px; color: #cbd5e1; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
 
-  /* Right Pane: Dedicated Full-Height Telemetry & Console */
+  /* Right Pane: macOS-Style Terminal Window */
+  .term-window {
+    flex: 1; min-height: 0; display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow);
+  }
   .term-bar {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 9px 14px; background: var(--surface);
+    padding: 10px 14px; background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  .term-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); }
+  .term-left { display: flex; align-items: center; gap: 10px; }
+  .mac-dots { display: inline-flex; gap: 6px; }
+  .mac-dots i { width: 10px; height: 10px; border-radius: 50%; display: block; opacity: 0.85; }
+  .mac-dots i:nth-child(1) { background: #ff5f57; }
+  .mac-dots i:nth-child(2) { background: #febc2e; }
+  .mac-dots i:nth-child(3) { background: #28c840; }
+  .term-title { font-size: 12.5px; font-weight: 600; color: var(--ink); }
   .state-badge {
     font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
-    padding: 2px 7px; border-radius: var(--r-sm); letter-spacing: 0.05em;
+    padding: 2px 8px; border-radius: 999px; letter-spacing: 0.04em;
     background: var(--surface-2); color: var(--ink-muted); border: 1px solid var(--border);
   }
-  .state-badge.running { background: var(--accent-soft); color: #fdba74; border-color: rgba(234,88,12,0.4); }
-  .state-badge.done { background: var(--ok-soft); color: #86efac; border-color: rgba(34,197,94,0.4); }
-  .state-badge.error { background: var(--err-soft); color: #fca5a5; border-color: rgba(239,68,68,0.4); }
+  .state-badge.running { background: var(--blue-soft); color: #93c5fd; border-color: rgba(59,130,246,0.35); }
+  .state-badge.done { background: var(--ok-soft); color: #86efac; border-color: rgba(34,197,94,0.35); }
+  .state-badge.error { background: var(--err-soft); color: #fca5a5; border-color: rgba(239,68,68,0.35); }
 
-  .prog-zone {
-    padding: 10px 14px; border-bottom: 1px solid var(--border);
-    background: #0f1114; flex-shrink: 0;
+  .term-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 12px 14px; gap: 10px; }
+  .prog-card {
+    padding: 10px 12px; border-radius: var(--r-md);
+    background: var(--inset); border: 1px solid var(--border); flex-shrink: 0;
   }
-  .prog-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .prog-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 7px; }
   .prog-title { font-size: 12.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .prog-pct { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
-  .prog-track { width: 100%; height: 5px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
-  .prog-fill { height: 100%; width: 0%; background: var(--accent); transition: width 260ms var(--ease); }
-  .prog-fill.done { background: var(--ok); }
-  .prog-fill.error { background: var(--err); }
-  .prog-stage { font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prog-pct { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; color: #93c5fd; flex-shrink: 0; }
+  .prog-track { width: 100%; height: 7px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .prog-fill {
+    height: 100%; width: 0%; border-radius: 999px;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    transition: width 300ms var(--ease);
+  }
+  .prog-fill.done { background: linear-gradient(90deg, #16a34a, #4ade80); }
+  .prog-fill.error { background: linear-gradient(90deg, #dc2626, #f87171); }
+  .prog-stage { font-size: 11.5px; color: var(--ink-muted); margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .console {
-    flex: 1; min-height: 0; padding: 12px 14px;
-    font-family: var(--font-mono); font-size: 11.5px; color: #d4d4d8;
+    flex: 1; min-height: 0; padding: 11px 13px; border-radius: var(--r-md);
+    background: #080a0f; border: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 11.5px; color: #cbd5e1;
     overflow-y: auto; white-space: pre-wrap; line-height: 1.55;
   }
   .console::-webkit-scrollbar { width: 6px; }
-  .console::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 3px; }
+  .console::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; }
 
   .banner {
-    display: none; padding: 7px 10px; border-radius: var(--r-sm); font-size: 12px;
-    background: var(--accent-soft); border: 1px solid rgba(234, 88, 12, 0.4); color: #fed7aa;
+    display: none; padding: 8px 11px; border-radius: var(--r-sm); font-size: 12px;
+    background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.32); color: #fde68a;
   }
-  .banner a { color: #fff; text-decoration: underline; font-weight: 600; }
+  .banner a { color: #93c5fd; font-weight: 600; }
 
-  /* Toast */
+  /* Floating Toast */
   .toast {
-    position: fixed; right: 16px; bottom: 16px; z-index: 50;
-    background: var(--surface-2); color: var(--ink);
-    border: 1px solid var(--border-strong); border-left: 3px solid var(--accent);
-    border-radius: var(--r-sm); padding: 8px 13px; font-size: 12px; font-weight: 500;
-    box-shadow: 0 12px 28px rgba(0,0,0,0.5);
-    opacity: 0; transform: translateY(6px); pointer-events: none;
-    transition: opacity 160ms var(--ease), transform 160ms var(--ease);
+    position: fixed; right: 20px; bottom: 20px; z-index: 50;
+    background: rgba(26, 30, 40, 0.96); backdrop-filter: blur(10px);
+    color: var(--ink); border: 1px solid var(--border-strong);
+    border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 600;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    opacity: 0; transform: translateY(8px); pointer-events: none;
+    transition: opacity 180ms var(--ease), transform 180ms var(--ease);
   }
   .toast.show { opacity: 1; transform: translateY(0); }
 
@@ -823,9 +851,8 @@ HTML_PAGE = r"""<!doctype html>
   }
   @media (max-width: 960px) {
     html, body { overflow: auto; }
-    .shell { height: auto; border: 0; }
+    .shell { height: auto; }
     .workspace { grid-template-columns: 1fr; }
-    .pane-left { border-right: 0; border-bottom: 1px solid var(--border); }
     .console { min-height: 220px; }
   }
 </style>
@@ -837,7 +864,10 @@ HTML_PAGE = r"""<!doctype html>
       <div class="mark" aria-hidden="true">
         <svg class="ic" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       </div>
-      <h1>MyPC MCP <span class="meta">WEB AI &middot; TAILSCALE FUNNEL</span></h1>
+      <div class="brand-title">
+        <h1>MyPC MCP</h1>
+        <span class="sub">Kết nối AI Web &middot; Tailscale Funnel</span>
+      </div>
     </div>
     <div class="telemetry">
       <div class="chip num" id="st-py"><span class="led warn"></span>Python...</div>
@@ -853,12 +883,12 @@ HTML_PAGE = r"""<!doctype html>
 
   <main class="workspace">
     <div class="pane-left">
-      <section class="sec">
-        <div class="sec-head"><h2><span class="idx">01</span> Chuẩn bị môi trường &amp; Tailscale</h2></div>
+      <section class="card">
+        <h2><span class="step-dot">1</span> Chuẩn bị môi trường &amp; Tailscale</h2>
         <div class="task-row">
           <div class="task-info">
             <span class="task-ic" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
-            <div><div class="lbl">Môi trường Python</div><div class="sub">Tạo .venv, cài gói phụ thuộc &amp; sinh .env</div></div>
+            <div><div class="lbl">Môi trường Python</div><div class="sub">Tạo .venv, cài thư viện &amp; sinh .env</div></div>
           </div>
           <button class="primary" onclick="runAction('/api/install', {}, this)">
             <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -882,8 +912,8 @@ HTML_PAGE = r"""<!doctype html>
         </div>
       </section>
 
-      <section class="sec">
-        <div class="sec-head"><h2><span class="idx">02</span> Bảo mật &amp; Tailscale Funnel</h2></div>
+      <section class="card">
+        <h2><span class="step-dot">2</span> Bảo mật &amp; Tailscale Funnel</h2>
         <div class="form-grid">
           <div class="span2">
             <label for="f-pin">Consent PIN (mã nhập khi duyệt ChatGPT / Claude / Gemini Web)</label>
@@ -918,7 +948,7 @@ HTML_PAGE = r"""<!doctype html>
             <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             Lưu .env
           </button>
-          <button class="primary" onclick="enableTailscale(this)">
+          <button class="accent" onclick="enableTailscale(this)">
             <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Bật Tailscale Funnel (HTTPS)
           </button>
@@ -926,8 +956,8 @@ HTML_PAGE = r"""<!doctype html>
         <div id="ts-banner" class="banner" role="alert"></div>
       </section>
 
-      <section class="sec">
-        <div class="sec-head"><h2><span class="idx">03</span> Điều khiển Server</h2></div>
+      <section class="card">
+        <h2><span class="step-dot">3</span> Điều khiển Server</h2>
         <div class="ctrl-row">
           <button id="btn-toggle-srv" class="success" onclick="toggleServer(this)">
             <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -944,8 +974,8 @@ HTML_PAGE = r"""<!doctype html>
         </div>
       </section>
 
-      <section class="sec">
-        <div class="sec-head"><h2><span class="idx">04</span> Kết nối AI Web (ChatGPT / Claude / Gemini)</h2></div>
+      <section class="card grow">
+        <h2><span class="step-dot">4</span> Kết nối AI Web (ChatGPT / Claude / Gemini)</h2>
         <div class="input-row">
           <div class="endpoint" id="out-url">Chưa phát hiện URL Tailscale Funnel...</div>
           <button class="xs primary" onclick="copyText(document.getElementById('out-url').textContent, 'Đã copy MCP Endpoint URL')">
@@ -956,32 +986,36 @@ HTML_PAGE = r"""<!doctype html>
         <ol class="guide">
           <li>Mở <b>ChatGPT / Claude / Gemini Web</b> &rarr; Thêm <b>Custom MCP Connector</b>.</li>
           <li>Đặt tên <b>mypc</b>, dán URL ở trên và chọn xác thực <b>OAuth</b>.</li>
-          <li>Nhập <b>Consent PIN</b> (Bước 02) tại trang <code>/consent</code> &rarr; <b>Allow Access</b>.</li>
+          <li>Nhập <b>Consent PIN</b> (Bước 2) tại trang <code>/consent</code> &rarr; <b>Allow Access</b>.</li>
         </ol>
       </section>
     </div>
 
     <aside class="pane-right">
-      <div class="term-bar">
-        <div class="term-title">
-          <svg class="ic" aria-hidden="true" viewBox="0 0 24 24" style="color:var(--accent)"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-          <span>Console &amp; Tiến trình</span>
-          <span class="state-badge" id="live-tag">IDLE</span>
+      <div class="term-window">
+        <div class="term-bar">
+          <div class="term-left">
+            <span class="mac-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="term-title">Tiến trình &amp; Nhật ký</span>
+            <span class="state-badge" id="live-tag">READY</span>
+          </div>
+          <div class="btns">
+            <button class="xs quiet" onclick="copyText(document.getElementById('console').textContent, 'Đã copy nhật ký')">Copy</button>
+            <button class="xs quiet" onclick="logMsg('Đã xóa nhật ký.')">Xóa log</button>
+          </div>
         </div>
-        <div class="btns">
-          <button class="xs quiet" onclick="copyText(document.getElementById('console').textContent, 'Đã copy nhật ký')">Copy</button>
-          <button class="xs quiet" onclick="logMsg('Đã xóa nhật ký.')">Xóa log</button>
+        <div class="term-inner">
+          <div class="prog-card" aria-live="polite">
+            <div class="prog-top">
+              <span class="prog-title" id="prog-title">Sẵn sàng</span>
+              <span class="prog-pct" id="prog-pct">0%</span>
+            </div>
+            <div class="prog-track"><div class="prog-fill" id="prog-bar"></div></div>
+            <div class="prog-stage" id="prog-stage">Bấm một tác vụ bên trái để theo dõi tiến trình trực tiếp.</div>
+          </div>
+          <div class="console" id="console" aria-live="polite">Sẵn sàng. Thực hiện lần lượt Bước 1 &rarr; Bước 4 ở cột bên trái.</div>
         </div>
       </div>
-      <div class="prog-zone" aria-live="polite">
-        <div class="prog-top">
-          <span class="prog-title" id="prog-title">Sẵn sàng</span>
-          <span class="prog-pct" id="prog-pct">0%</span>
-        </div>
-        <div class="prog-track"><div class="prog-fill" id="prog-bar"></div></div>
-        <div class="prog-stage" id="prog-stage">Bấm một tác vụ bên trái để theo dõi tiến trình trực tiếp.</div>
-      </div>
-      <div class="console" id="console" aria-live="polite">Sẵn sàng. Thực hiện lần lượt 01 &rarr; 04 ở cột bên trái.</div>
     </aside>
   </main>
 </div>
@@ -1023,7 +1057,7 @@ function genSecret(id, bytes) {
 }
 function updateClientSnippets() {
   const base = (document.getElementById('f-baseurl').value || '').replace(/\/+$/, '');
-  const url = base ? `${base}/mcp` : 'Chưa phát hiện URL Tailscale Funnel (hãy đăng nhập Tailscale ở Bước 01)';
+  const url = base ? `${base}/mcp` : 'Chưa phát hiện URL Tailscale Funnel (hãy đăng nhập Tailscale ở Bước 1)';
   document.getElementById('out-url').textContent = url;
 }
 let isServerRunning = false;
@@ -1045,9 +1079,9 @@ async function refreshStatus() {
     `<span class="led ${d.tailscale.logged_in ? 'ok' : (d.tailscale.installed ? 'warn' : 'err')}"></span>` +
     (d.tailscale.logged_in ? 'Tailscale OK' : (d.tailscale.installed ? 'TS chưa login' : 'Chưa có TS'));
   document.getElementById('st-srv').innerHTML =
-    `<span class="led ${d.server_running ? 'ok' : 'err'}"></span>${d.server_running ? 'UP :' + d.port : 'STOPPED'}`;
+    `<span class="led ${d.server_running ? 'ok' : 'err'}"></span>${d.server_running ? 'UP :' + d.port : 'Đang tắt'}`;
   document.getElementById('st-env').innerHTML =
-    `<span class="led ${d.env_exists ? 'ok' : 'warn'}"></span>${d.env_exists ? '.env OK' : '.env thiếu'}`;
+    `<span class="led ${d.env_exists ? 'ok' : 'warn'}"></span>${d.env_exists ? '.env OK' : 'Chưa có .env'}`;
 
   document.getElementById('f-port').value = d.env.MYPC_MCP_PORT || '3080';
   document.getElementById('f-pin').value = d.env.MYPC_MCP_CONSENT_PIN || '';
@@ -1063,7 +1097,7 @@ function setProgress(title, pct, stage, status) {
   bar.style.width = `${pct}%`;
   bar.className = 'prog-fill ' + (status === 'done' ? 'done' : (status === 'error' ? 'error' : ''));
   const tag = document.getElementById('live-tag');
-  tag.textContent = status === 'running' ? 'RUNNING' : (status === 'done' ? 'DONE' : (status === 'error' ? 'ERROR' : 'IDLE'));
+  tag.textContent = status === 'running' ? 'RUNNING' : (status === 'done' ? 'DONE' : (status === 'error' ? 'ERROR' : 'READY'));
   tag.className = 'state-badge ' + (status || '');
 }
 async function pollJob(jobId, btn) {
@@ -1074,7 +1108,7 @@ async function pollJob(jobId, btn) {
       setProgress(j.title, j.progress, j.stage, j.status);
       if (j.log) logMsg(j.log);
       if (j.status === 'done' || j.status === 'error') {
-        showToast(j.status === 'done' ? 'Hoàn tất cài đặt!' : 'Có lỗi xảy ra — kiểm tra Console');
+        showToast(j.status === 'done' ? 'Hoàn tất cài đặt!' : 'Có lỗi xảy ra — xem nhật ký');
         await refreshStatus();
         break;
       }
