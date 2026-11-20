@@ -585,24 +585,27 @@ HTML_PAGE = r"""<!doctype html>
 <title>MyPC MCP — Control Center</title>
 <style>
   :root {
-    --color-bg: #09090b;
-    --color-surface: #111217;
-    --color-surface-elevated: #171922;
-    --color-input: #0b0c10;
-    --color-border: rgba(255, 255, 255, 0.08);
-    --color-border-strong: rgba(255, 255, 255, 0.14);
-    --color-text: #f4f4f5;
-    --color-muted: #a1a1aa;
-    --color-primary: #6366f1;
-    --color-primary-hover: #4f46e5;
-    --color-accent: #38bdf8;
-    --color-success: #10b981;
-    --color-success-hover: #059669;
-    --color-warning: #f59e0b;
-    --color-danger: #ef4444;
-    --radius-sm: 6px;
-    --radius-md: 9px;
-    --radius-lg: 12px;
+    /* Industrial Hardware / Editorial Dark — zero AI purple/cyan gradients */
+    --bg: #0c0d0f;
+    --surface: #131519;
+    --surface-2: #1a1d23;
+    --surface-hover: #22262e;
+    --inset: #0a0b0d;
+    --border: rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --ink: #ecebe8;
+    --ink-muted: #8f939a;
+    --ink-dim: #62666e;
+    --accent: #ea580c;
+    --accent-hover: #c2410c;
+    --accent-soft: rgba(234, 88, 12, 0.14);
+    --ok: #22c55e;
+    --ok-soft: rgba(34, 197, 94, 0.14);
+    --warn: #eab308;
+    --err: #ef4444;
+    --err-soft: rgba(239, 68, 68, 0.14);
+    --r-sm: 5px;
+    --r-md: 8px;
     --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
     --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
     --ease: cubic-bezier(0.2, 0, 0, 1);
@@ -611,215 +614,207 @@ HTML_PAGE = r"""<!doctype html>
   html, body {
     height: 100%; margin: 0; overflow: hidden;
     font-family: var(--font-sans); font-size: 13px; line-height: 1.45;
-    color: var(--color-text);
-    background:
-      radial-gradient(900px 420px at 12% -10%, rgba(99, 102, 241, 0.14), transparent 60%),
-      radial-gradient(700px 360px at 88% -8%, rgba(56, 189, 248, 0.09), transparent 55%),
-      var(--color-bg);
+    color: var(--ink); background: var(--bg);
     -webkit-font-smoothing: antialiased;
   }
-  .app {
-    height: 100vh; display: flex; flex-direction: column;
-    padding: 12px 16px; gap: 10px; max-width: 1480px; margin: 0 auto;
+  .num, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  /* Full-viewport architectural frame (100dvh, zero page scroll) */
+  .shell {
+    height: 100dvh; display: flex; flex-direction: column;
+    max-width: 1480px; margin: 0 auto;
+    border-left: 1px solid var(--border); border-right: 1px solid var(--border);
   }
-  /* Top Navigation / Status Bar */
+
+  /* Top Hardware Status Bar */
   .topbar {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    background: rgba(17, 18, 23, 0.86); backdrop-filter: blur(12px);
-    border: 1px solid var(--color-border); border-radius: var(--radius-lg);
-    padding: 8px 14px; flex-shrink: 0;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.3);
+    padding: 9px 16px; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
   .brand { display: flex; align-items: center; gap: 10px; }
-  .logo {
-    width: 28px; height: 28px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
-    display: inline-flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35); flex-shrink: 0;
+  .mark {
+    width: 24px; height: 24px; border-radius: var(--r-sm);
+    background: var(--accent); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .brand-text { display: flex; align-items: baseline; gap: 8px; }
-  .brand h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
-  .brand .badge {
-    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
-    background: rgba(99, 102, 241, 0.14); color: #a5b4fc;
-    border: 1px solid rgba(99, 102, 241, 0.25);
+  .brand h1 {
+    margin: 0; font-size: 14px; font-weight: 700; letter-spacing: -0.02em;
+    display: flex; align-items: center; gap: 8px;
   }
-  .pills { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-  .pill {
-    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
-    border-radius: 999px; background: var(--color-input);
-    border: 1px solid var(--color-border); font-size: 11.5px; font-weight: 500;
-    color: var(--color-text); white-space: nowrap;
+  .brand .meta {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+    color: var(--ink-muted); letter-spacing: 0.02em;
   }
-  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .dot.ok { background: var(--color-success); box-shadow: 0 0 8px rgba(16, 185, 129, 0.8); }
-  .dot.warn { background: var(--color-warning); }
-  .dot.err { background: var(--color-danger); }
+  .telemetry { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px;
+    border-radius: var(--r-sm); background: var(--inset);
+    border: 1px solid var(--border); font-family: var(--font-mono);
+    font-size: 11px; color: var(--ink); white-space: nowrap;
+  }
+  .led { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .led.ok { background: var(--ok); }
+  .led.warn { background: var(--warn); }
+  .led.err { background: var(--err); }
 
-  /* Main 2-Column Cockpit */
-  .main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 10px; }
-  .col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-  .card {
-    background: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg); padding: 11px 14px;
+  /* Two-column Split Workspace */
+  .workspace {
+    flex: 1; min-height: 0; display: grid;
+    grid-template-columns: 1.12fr 0.88fr;
+  }
+  .pane-left {
+    display: flex; flex-direction: column; min-height: 0;
+    border-right: 1px solid var(--border);
+  }
+  .pane-right {
+    display: flex; flex-direction: column; min-height: 0;
+    background: var(--inset);
+  }
+
+  /* Left Sections separated by crisp 1px structural rules (no card-soup) */
+  .sec {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
     display: flex; flex-direction: column; gap: 8px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
   }
-  .card.grow { flex: 1; min-height: 0; }
-  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .card h2 {
-    margin: 0; font-size: 13px; font-weight: 600; letter-spacing: -0.01em;
-    display: flex; align-items: center; gap: 8px; color: var(--color-text);
+  .sec:last-child { border-bottom: 0; flex: 1; min-height: 0; }
+  .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .sec h2 {
+    margin: 0; font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-muted);
+    display: flex; align-items: center; gap: 8px;
   }
-  .step-num {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 20px; height: 20px; border-radius: 6px; font-size: 11px; font-weight: 700;
-    background: rgba(99, 102, 241, 0.16); color: #a5b4fc;
-    border: 1px solid rgba(99, 102, 241, 0.25); flex-shrink: 0;
+  .idx {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    color: var(--accent); font-variant-numeric: tabular-nums;
   }
 
   /* Setup Rows */
-  .row-setup {
+  .task-row {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    padding: 8px 11px; background: var(--color-input);
-    border: 1px solid var(--color-border); border-radius: var(--radius-md); flex-wrap: wrap;
+    padding: 7px 10px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--r-md); flex-wrap: wrap;
   }
-  .row-meta { display: flex; align-items: center; gap: 9px; min-width: 0; }
-  .row-icon {
-    width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
-    background: var(--color-surface-elevated); border: 1px solid var(--color-border);
-    display: inline-flex; align-items: center; justify-content: center; color: #a5b4fc;
+  .task-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .task-ic {
+    width: 26px; height: 26px; border-radius: var(--r-sm); flex-shrink: 0;
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: inline-flex; align-items: center; justify-content: center; color: var(--ink-muted);
   }
-  .row-setup .lbl { font-weight: 600; font-size: 12.5px; color: var(--color-text); }
-  .row-setup .sub { font-size: 11.5px; color: var(--color-muted); }
+  .task-row .lbl { font-weight: 600; font-size: 12.5px; color: var(--ink); }
+  .task-row .sub { font-size: 11.5px; color: var(--ink-muted); }
 
-  /* Forms */
+  /* Form Grid */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
   .span2 { grid-column: span 2; }
-  label { display: block; font-size: 11.5px; color: var(--color-muted); margin-bottom: 4px; font-weight: 500; }
+  label { display: block; font-size: 11px; color: var(--ink-muted); margin-bottom: 4px; font-weight: 500; }
   input {
-    width: 100%; padding: 7px 10px; border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border); background: var(--color-input);
-    color: var(--color-text); font-family: var(--font-sans); font-size: 12.5px;
-    transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
+    width: 100%; padding: 6.5px 9px; border-radius: var(--r-sm);
+    border: 1px solid var(--border); background: var(--inset);
+    color: var(--ink); font-family: var(--font-mono); font-size: 12px;
+    transition: border-color 140ms var(--ease);
   }
-  input.mono { font-family: var(--font-mono); font-size: 12px; }
-  input:focus-visible, button:focus-visible {
-    outline: 2px solid var(--color-primary); outline-offset: 2px;
-  }
-  input:focus { border-color: var(--color-primary); }
+  input::placeholder { color: var(--ink-dim); font-family: var(--font-sans); }
+  input:focus { border-color: var(--accent); outline: none; }
+  input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .input-row { display: flex; gap: 5px; align-items: center; }
   .input-row input { flex: 1; min-width: 0; }
 
-  /* Buttons */
+  /* Tactile Hardware Buttons */
   .btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .ctrl-grid { display: flex; flex-wrap: wrap; gap: 7px; }
-  .ctrl-grid button { flex: 1 1 auto; justify-content: center; }
+  .ctrl-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ctrl-row button { flex: 1 1 auto; justify-content: center; }
   button {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 6.5px 12px; border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border-strong);
-    background: var(--color-surface-elevated); color: var(--color-text);
+    padding: 6px 11px; border-radius: var(--r-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2); color: var(--ink);
     font-family: var(--font-sans); font-size: 12px; font-weight: 600;
     cursor: pointer; white-space: nowrap;
-    transition: background 150ms var(--ease), border-color 150ms var(--ease), transform 100ms var(--ease), opacity 150ms var(--ease);
+    transition: background 140ms var(--ease), border-color 140ms var(--ease), transform 90ms var(--ease);
   }
-  button:hover:not(:disabled) { background: #222634; border-color: rgba(255,255,255,0.22); }
+  button:hover:not(:disabled) { background: var(--surface-hover); border-color: rgba(255,255,255,0.24); }
   button:active:not(:disabled) { transform: translateY(1px); }
-  button:disabled { opacity: 0.55; cursor: wait; }
-  button.primary {
-    background: var(--color-primary); border-color: rgba(255,255,255,0.12); color: #fff;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.18);
-  }
-  button.primary:hover:not(:disabled) { background: var(--color-primary-hover); }
-  button.success {
-    background: var(--color-success); border-color: rgba(255,255,255,0.12); color: #042f2e;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
-  }
-  button.success:hover:not(:disabled) { background: var(--color-success-hover); color: #fff; }
-  button.danger {
-    background: rgba(239, 68, 68, 0.14); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;
-  }
-  button.danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.24); border-color: rgba(239, 68, 68, 0.65); }
-  button.ghost { background: transparent; border-color: var(--color-border); color: var(--color-muted); }
-  button.ghost:hover:not(:disabled) { color: var(--color-text); background: var(--color-surface-elevated); }
-  button.xs { padding: 5px 8px; font-size: 11.5px; }
-  button.icon-btn { padding: 6px 7px; }
-  svg.ic { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  button:disabled { opacity: 0.5; cursor: wait; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+  button.success { background: var(--ok-soft); border-color: rgba(34, 197, 94, 0.45); color: #86efac; }
+  button.success:hover:not(:disabled) { background: rgba(34, 197, 94, 0.24); border-color: rgba(34, 197, 94, 0.7); }
+  button.danger { background: var(--err-soft); border-color: rgba(239, 68, 68, 0.45); color: #fca5a5; }
+  button.danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.24); border-color: rgba(239, 68, 68, 0.7); }
+  button.quiet { background: transparent; border-color: var(--border); color: var(--ink-muted); }
+  button.quiet:hover:not(:disabled) { color: var(--ink); background: var(--surface-2); }
+  button.xs { padding: 4.5px 8px; font-size: 11.5px; }
+  button.ic-only { padding: 6px 7px; }
+  svg.ic { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
-  /* Endpoint & Guide Box */
-  .endpoint-box {
-    flex: 1; min-width: 0; background: var(--color-input);
-    border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-sm);
-    padding: 7px 10px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;
-    color: #7dd3fc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  /* Endpoint & Step Guide */
+  .endpoint {
+    flex: 1; min-width: 0; background: var(--surface);
+    border: 1px solid var(--border-strong); border-radius: var(--r-sm);
+    padding: 6.5px 10px; font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .guide-list {
-    margin: 0; padding: 8px 11px 8px 26px; background: var(--color-input);
-    border: 1px solid var(--color-border); border-radius: var(--radius-sm);
-    font-size: 12px; color: var(--color-muted); line-height: 1.55;
+  .guide {
+    margin: 0; padding: 8px 12px 8px 24px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    font-size: 12px; color: var(--ink-muted); line-height: 1.55;
   }
-  .guide-list b { color: var(--color-text); font-weight: 600; }
+  .guide b { color: var(--ink); font-weight: 600; }
+  .guide code { font-family: var(--font-mono); font-size: 11px; color: var(--ink); background: var(--inset); padding: 1px 4px; border-radius: 3px; }
 
-  /* Right Column: Terminal + Progress */
-  .term-card { padding: 0; overflow: hidden; }
-  .term-head {
+  /* Right Pane: Dedicated Full-Height Telemetry & Console */
+  .term-bar {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 9px 13px; background: rgba(255,255,255,0.02);
-    border-bottom: 1px solid var(--color-border); flex-shrink: 0;
+    padding: 9px 14px; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  .term-title { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
-  .live-tag {
-    display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700;
-    padding: 2px 7px; border-radius: 999px; letter-spacing: 0.04em;
-    background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25);
+  .term-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); }
+  .state-badge {
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+    padding: 2px 7px; border-radius: var(--r-sm); letter-spacing: 0.05em;
+    background: var(--surface-2); color: var(--ink-muted); border: 1px solid var(--border);
   }
-  .term-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px 12px; gap: 9px; }
-  .prog-wrap {
-    background: var(--color-input); border: 1px solid var(--color-border);
-    border-radius: var(--radius-md); padding: 9px 11px; flex-shrink: 0;
+  .state-badge.running { background: var(--accent-soft); color: #fdba74; border-color: rgba(234,88,12,0.4); }
+  .state-badge.done { background: var(--ok-soft); color: #86efac; border-color: rgba(34,197,94,0.4); }
+  .state-badge.error { background: var(--err-soft); color: #fca5a5; border-color: rgba(239,68,68,0.4); }
+
+  .prog-zone {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: #0f1114; flex-shrink: 0;
   }
-  .prog-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 6px; gap: 8px; }
-  .prog-title { font-weight: 600; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .prog-pct { font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: #a5b4fc; flex-shrink: 0; }
-  .prog-track { width: 100%; height: 7px; background: #1e2230; border-radius: 999px; overflow: hidden; }
-  .prog-bar {
-    height: 100%; width: 0%; border-radius: 999px;
-    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-    transition: width 280ms var(--ease);
-  }
-  .prog-bar.running {
-    background-size: 200% 100%;
-    animation: shimmer 1.4s linear infinite;
-  }
-  .prog-bar.done { background: linear-gradient(90deg, #059669, #34d399); }
-  .prog-bar.error { background: linear-gradient(90deg, #dc2626, #f87171); }
-  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-  .prog-stage { font-size: 11.5px; color: var(--color-muted); margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prog-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .prog-title { font-size: 12.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prog-pct { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+  .prog-track { width: 100%; height: 5px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; width: 0%; background: var(--accent); transition: width 260ms var(--ease); }
+  .prog-fill.done { background: var(--ok); }
+  .prog-fill.error { background: var(--err); }
+  .prog-stage { font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
   .console {
-    flex: 1; min-height: 80px; background: #07080c;
-    border: 1px solid var(--color-border); border-radius: var(--radius-md);
-    padding: 10px 12px; font-family: var(--font-mono); font-size: 11.5px;
-    color: #d4d4d8; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;
+    flex: 1; min-height: 0; padding: 12px 14px;
+    font-family: var(--font-mono); font-size: 11.5px; color: #d4d4d8;
+    overflow-y: auto; white-space: pre-wrap; line-height: 1.55;
   }
   .console::-webkit-scrollbar { width: 6px; }
-  .console::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 999px; }
+  .console::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 3px; }
 
   .banner {
-    display: none; padding: 7px 10px; border-radius: var(--radius-sm); font-size: 12px;
-    background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #fde68a;
+    display: none; padding: 7px 10px; border-radius: var(--r-sm); font-size: 12px;
+    background: var(--accent-soft); border: 1px solid rgba(234, 88, 12, 0.4); color: #fed7aa;
   }
-  .banner a { color: #7dd3fc; font-weight: 600; }
+  .banner a { color: #fff; text-decoration: underline; font-weight: 600; }
 
-  /* Floating Toast */
+  /* Toast */
   .toast {
-    position: fixed; right: 18px; bottom: 18px; z-index: 50;
-    background: #181b25; color: var(--color-text);
-    border: 1px solid rgba(99, 102, 241, 0.4); border-radius: var(--radius-md);
-    padding: 8px 14px; font-size: 12.5px; font-weight: 500;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-    opacity: 0; transform: translateY(8px); pointer-events: none;
-    transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+    position: fixed; right: 16px; bottom: 16px; z-index: 50;
+    background: var(--surface-2); color: var(--ink);
+    border: 1px solid var(--border-strong); border-left: 3px solid var(--accent);
+    border-radius: var(--r-sm); padding: 8px 13px; font-size: 12px; font-weight: 500;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+    opacity: 0; transform: translateY(6px); pointer-events: none;
+    transition: opacity 160ms var(--ease), transform 160ms var(--ease);
   }
   .toast.show { opacity: 1; transform: translateY(0); }
 
@@ -828,42 +823,41 @@ HTML_PAGE = r"""<!doctype html>
   }
   @media (max-width: 960px) {
     html, body { overflow: auto; }
-    .app { height: auto; }
-    .main { grid-template-columns: 1fr; }
+    .shell { height: auto; border: 0; }
+    .workspace { grid-template-columns: 1fr; }
+    .pane-left { border-right: 0; border-bottom: 1px solid var(--border); }
+    .console { min-height: 220px; }
   }
 </style>
 </head>
 <body>
-<div class="app">
+<div class="shell">
   <header class="topbar">
     <div class="brand">
-      <div class="logo" aria-hidden="true">
-        <svg class="ic" viewBox="0 0 24 24" style="color:#fff;width:16px;height:16px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <div class="mark" aria-hidden="true">
+        <svg class="ic" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       </div>
-      <div class="brand-text">
-        <h1>MyPC MCP</h1>
-        <span class="badge">Web AI &middot; Tailscale Funnel</span>
-      </div>
+      <h1>MyPC MCP <span class="meta">WEB AI &middot; TAILSCALE FUNNEL</span></h1>
     </div>
-    <div class="pills">
-      <div class="pill" id="st-py"><span class="dot warn"></span>Python...</div>
-      <div class="pill" id="st-ts"><span class="dot warn"></span>Tailscale...</div>
-      <div class="pill" id="st-srv"><span class="dot warn"></span>Server...</div>
-      <div class="pill" id="st-env"><span class="dot warn"></span>.env...</div>
-      <button class="xs ghost" onclick="refreshStatus()" aria-label="Làm mới trạng thái">
+    <div class="telemetry">
+      <div class="chip num" id="st-py"><span class="led warn"></span>Python...</div>
+      <div class="chip num" id="st-ts"><span class="led warn"></span>Tailscale...</div>
+      <div class="chip num" id="st-srv"><span class="led warn"></span>Server...</div>
+      <div class="chip num" id="st-env"><span class="led warn"></span>.env...</div>
+      <button class="xs quiet" onclick="refreshStatus()" aria-label="Làm mới trạng thái">
         <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
         Làm mới
       </button>
     </div>
   </header>
 
-  <main class="main">
-    <div class="col">
-      <section class="card">
-        <h2><span class="step-num">1</span> Chuẩn bị Python &amp; Tailscale</h2>
-        <div class="row-setup">
-          <div class="row-meta">
-            <span class="row-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+  <main class="workspace">
+    <div class="pane-left">
+      <section class="sec">
+        <div class="sec-head"><h2><span class="idx">01</span> Chuẩn bị môi trường &amp; Tailscale</h2></div>
+        <div class="task-row">
+          <div class="task-info">
+            <span class="task-ic" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
             <div><div class="lbl">Môi trường Python</div><div class="sub">Tạo .venv, cài gói phụ thuộc &amp; sinh .env</div></div>
           </div>
           <button class="primary" onclick="runAction('/api/install', {}, this)">
@@ -871,10 +865,10 @@ HTML_PAGE = r"""<!doctype html>
             Cài .venv &amp; Thư viện
           </button>
         </div>
-        <div class="row-setup">
-          <div class="row-meta">
-            <span class="row-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-            <div><div class="lbl">Tailscale HTTPS</div><div class="sub">Tải bộ cài chính thức, đăng nhập &amp; bật MagicDNS</div></div>
+        <div class="task-row">
+          <div class="task-info">
+            <span class="task-ic" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+            <div><div class="lbl">Tailscale HTTPS</div><div class="sub">Tải trực tiếp bộ cài, đăng nhập &amp; bật MagicDNS</div></div>
           </div>
           <div class="btns">
             <button class="primary" onclick="runAction('/api/tailscale-install', {}, this)">
@@ -882,49 +876,49 @@ HTML_PAGE = r"""<!doctype html>
               Tải &amp; Cài
             </button>
             <button class="success" onclick="runAction('/api/tailscale-login', {}, this)">Đăng nhập</button>
-            <button class="ghost" onclick="window.open('https://login.tailscale.com/admin/dns', '_blank')">MagicDNS</button>
-            <button class="ghost" onclick="window.open('https://tailscale.com/download', '_blank')">Tải tay</button>
+            <button class="quiet" onclick="window.open('https://login.tailscale.com/admin/dns', '_blank')">MagicDNS</button>
+            <button class="quiet" onclick="window.open('https://tailscale.com/download', '_blank')">Tải tay</button>
           </div>
         </div>
       </section>
 
-      <section class="card">
-        <h2><span class="step-num">2</span> Cấu hình bảo mật &amp; Tailscale Funnel</h2>
+      <section class="sec">
+        <div class="sec-head"><h2><span class="idx">02</span> Bảo mật &amp; Tailscale Funnel</h2></div>
         <div class="form-grid">
           <div class="span2">
-            <label for="f-pin">Consent PIN (mã xác nhận khi duyệt ChatGPT / Claude / Gemini Web)</label>
+            <label for="f-pin">Consent PIN (mã nhập khi duyệt ChatGPT / Claude / Gemini Web)</label>
             <div class="input-row">
-              <input id="f-pin" class="mono" type="password" placeholder="Nhập mã PIN mạnh...">
-              <button class="xs icon-btn" onclick="toggleVis('f-pin')" aria-label="Hiện hoặc ẩn PIN" title="Hiện / Ẩn">
+              <input id="f-pin" type="password" placeholder="Nhập mã PIN mạnh...">
+              <button class="xs ic-only" onclick="toggleVis('f-pin')" aria-label="Hiện hoặc ẩn PIN" title="Hiện / Ẩn">
                 <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
-              <button class="xs icon-btn" onclick="genSecret('f-pin', 12)" aria-label="Sinh PIN ngẫu nhiên" title="Sinh PIN mới">
+              <button class="xs ic-only" onclick="genSecret('f-pin', 12)" aria-label="Sinh PIN ngẫu nhiên" title="Sinh PIN mới">
                 <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
               </button>
-              <button class="xs icon-btn" onclick="copyVal('f-pin', 'Đã copy Consent PIN')" aria-label="Copy PIN" title="Copy PIN">
+              <button class="xs ic-only" onclick="copyVal('f-pin', 'Đã copy Consent PIN')" aria-label="Copy PIN" title="Copy PIN">
                 <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               </button>
             </div>
           </div>
           <div>
             <label for="f-port">Cổng cục bộ (Port)</label>
-            <input id="f-port" class="mono" type="number" value="3080">
+            <input id="f-port" class="num" type="number" value="3080">
           </div>
           <div>
             <label for="f-drives">Giới hạn ổ đĩa (vd: C:,D: &mdash; trống = tất cả)</label>
-            <input id="f-drives" class="mono" placeholder="Tất cả ổ đĩa">
+            <input id="f-drives" placeholder="Tất cả ổ đĩa">
           </div>
           <div class="span2">
             <label for="f-baseurl">Tailscale Funnel HTTPS URL (tự nhận diện)</label>
-            <input id="f-baseurl" class="mono" placeholder="https://my-pc.tailnet.ts.net">
+            <input id="f-baseurl" placeholder="https://my-pc.tailnet.ts.net">
           </div>
         </div>
         <div class="btns">
-          <button class="primary" onclick="saveConfig(this)">
+          <button onclick="saveConfig(this)">
             <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             Lưu .env
           </button>
-          <button class="success" onclick="enableTailscale(this)">
+          <button class="primary" onclick="enableTailscale(this)">
             <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Bật Tailscale Funnel (HTTPS)
           </button>
@@ -932,9 +926,9 @@ HTML_PAGE = r"""<!doctype html>
         <div id="ts-banner" class="banner" role="alert"></div>
       </section>
 
-      <section class="card">
-        <h2><span class="step-num">3</span> Điều khiển Server</h2>
-        <div class="ctrl-grid">
+      <section class="sec">
+        <div class="sec-head"><h2><span class="idx">03</span> Điều khiển Server</h2></div>
+        <div class="ctrl-row">
           <button id="btn-toggle-srv" class="success" onclick="toggleServer(this)">
             <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             <span>Khởi chạy Server</span>
@@ -950,49 +944,45 @@ HTML_PAGE = r"""<!doctype html>
         </div>
       </section>
 
-      <section class="card grow">
-        <h2><span class="step-num">4</span> Kết nối AI Web (ChatGPT / Claude / Gemini)</h2>
+      <section class="sec">
+        <div class="sec-head"><h2><span class="idx">04</span> Kết nối AI Web (ChatGPT / Claude / Gemini)</h2></div>
         <div class="input-row">
-          <div class="endpoint-box" id="out-url">Chưa phát hiện URL Tailscale Funnel...</div>
+          <div class="endpoint" id="out-url">Chưa phát hiện URL Tailscale Funnel...</div>
           <button class="xs primary" onclick="copyText(document.getElementById('out-url').textContent, 'Đã copy MCP Endpoint URL')">
             <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Copy URL
           </button>
         </div>
-        <ol class="guide-list">
+        <ol class="guide">
           <li>Mở <b>ChatGPT / Claude / Gemini Web</b> &rarr; Thêm <b>Custom MCP Connector</b>.</li>
           <li>Đặt tên <b>mypc</b>, dán URL ở trên và chọn xác thực <b>OAuth</b>.</li>
-          <li>Nhập <b>Consent PIN</b> (Bước 2) tại trang <code>/consent</code> &rarr; <b>Allow Access</b>.</li>
+          <li>Nhập <b>Consent PIN</b> (Bước 02) tại trang <code>/consent</code> &rarr; <b>Allow Access</b>.</li>
         </ol>
       </section>
     </div>
 
-    <div class="col">
-      <section class="card grow term-card">
-        <div class="term-head">
-          <div class="term-title">
-            <svg class="ic" aria-hidden="true" viewBox="0 0 24 24" style="color:#a5b4fc"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-            <span>Tiến trình &amp; Nhật ký</span>
-            <span class="live-tag" id="live-tag">READY</span>
-          </div>
-          <div class="btns">
-            <button class="xs ghost" onclick="copyText(document.getElementById('console').textContent, 'Đã copy nhật ký')">Copy</button>
-            <button class="xs ghost" onclick="logMsg('Đã xóa nhật ký.')">Xóa log</button>
-          </div>
+    <aside class="pane-right">
+      <div class="term-bar">
+        <div class="term-title">
+          <svg class="ic" aria-hidden="true" viewBox="0 0 24 24" style="color:var(--accent)"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <span>Console &amp; Tiến trình</span>
+          <span class="state-badge" id="live-tag">IDLE</span>
         </div>
-        <div class="term-body">
-          <div class="prog-wrap" aria-live="polite">
-            <div class="prog-head">
-              <span class="prog-title" id="prog-title">Sẵn sàng</span>
-              <span class="prog-pct" id="prog-pct">0%</span>
-            </div>
-            <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
-            <div class="prog-stage" id="prog-stage">Bấm một tác vụ ở cột bên trái để theo dõi tiến trình trực tiếp.</div>
-          </div>
-          <div class="console" id="console" aria-live="polite">Sẵn sàng. Thực hiện lần lượt Bước 1 &rarr; Bước 4 ở cột bên trái.</div>
+        <div class="btns">
+          <button class="xs quiet" onclick="copyText(document.getElementById('console').textContent, 'Đã copy nhật ký')">Copy</button>
+          <button class="xs quiet" onclick="logMsg('Đã xóa nhật ký.')">Xóa log</button>
         </div>
-      </section>
-    </div>
+      </div>
+      <div class="prog-zone" aria-live="polite">
+        <div class="prog-top">
+          <span class="prog-title" id="prog-title">Sẵn sàng</span>
+          <span class="prog-pct" id="prog-pct">0%</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="prog-bar"></div></div>
+        <div class="prog-stage" id="prog-stage">Bấm một tác vụ bên trái để theo dõi tiến trình trực tiếp.</div>
+      </div>
+      <div class="console" id="console" aria-live="polite">Sẵn sàng. Thực hiện lần lượt 01 &rarr; 04 ở cột bên trái.</div>
+    </aside>
   </main>
 </div>
 
@@ -1033,7 +1023,7 @@ function genSecret(id, bytes) {
 }
 function updateClientSnippets() {
   const base = (document.getElementById('f-baseurl').value || '').replace(/\/+$/, '');
-  const url = base ? `${base}/mcp` : 'Chưa phát hiện URL Tailscale Funnel (hãy đăng nhập Tailscale ở Bước 1)';
+  const url = base ? `${base}/mcp` : 'Chưa phát hiện URL Tailscale Funnel (hãy đăng nhập Tailscale ở Bước 01)';
   document.getElementById('out-url').textContent = url;
 }
 let isServerRunning = false;
@@ -1050,14 +1040,14 @@ async function refreshStatus() {
     toggleBtn.className = isServerRunning ? 'danger' : 'success';
   }
   document.getElementById('st-py').innerHTML =
-    `<span class="dot ${d.venv_ready ? 'ok' : 'warn'}"></span>Py ${d.python_version} (${d.venv_ready ? '.venv' : 'chưa cài'})`;
+    `<span class="led ${d.venv_ready ? 'ok' : 'warn'}"></span>Py ${d.python_version}${d.venv_ready ? ' · venv' : ''}`;
   document.getElementById('st-ts').innerHTML =
-    `<span class="dot ${d.tailscale.logged_in ? 'ok' : (d.tailscale.installed ? 'warn' : 'err')}"></span>` +
+    `<span class="led ${d.tailscale.logged_in ? 'ok' : (d.tailscale.installed ? 'warn' : 'err')}"></span>` +
     (d.tailscale.logged_in ? 'Tailscale OK' : (d.tailscale.installed ? 'TS chưa login' : 'Chưa có TS'));
   document.getElementById('st-srv').innerHTML =
-    `<span class="dot ${d.server_running ? 'ok' : 'err'}"></span>${d.server_running ? 'Server :' + d.port : 'Server tắt'}`;
+    `<span class="led ${d.server_running ? 'ok' : 'err'}"></span>${d.server_running ? 'UP :' + d.port : 'STOPPED'}`;
   document.getElementById('st-env').innerHTML =
-    `<span class="dot ${d.env_exists ? 'ok' : 'warn'}"></span>${d.env_exists ? '.env OK' : 'Chưa có .env'}`;
+    `<span class="led ${d.env_exists ? 'ok' : 'warn'}"></span>${d.env_exists ? '.env OK' : '.env thiếu'}`;
 
   document.getElementById('f-port').value = d.env.MYPC_MCP_PORT || '3080';
   document.getElementById('f-pin').value = d.env.MYPC_MCP_CONSENT_PIN || '';
@@ -1071,9 +1061,10 @@ function setProgress(title, pct, stage, status) {
   document.getElementById('prog-stage').textContent = stage || '';
   const bar = document.getElementById('prog-bar');
   bar.style.width = `${pct}%`;
-  bar.className = 'prog-bar ' + (status === 'done' ? 'done' : (status === 'error' ? 'error' : 'running'));
+  bar.className = 'prog-fill ' + (status === 'done' ? 'done' : (status === 'error' ? 'error' : ''));
   const tag = document.getElementById('live-tag');
-  tag.textContent = status === 'running' ? 'RUNNING' : (status === 'done' ? 'DONE' : (status === 'error' ? 'ERROR' : 'READY'));
+  tag.textContent = status === 'running' ? 'RUNNING' : (status === 'done' ? 'DONE' : (status === 'error' ? 'ERROR' : 'IDLE'));
+  tag.className = 'state-badge ' + (status || '');
 }
 async function pollJob(jobId, btn) {
   try {
@@ -1083,7 +1074,7 @@ async function pollJob(jobId, btn) {
       setProgress(j.title, j.progress, j.stage, j.status);
       if (j.log) logMsg(j.log);
       if (j.status === 'done' || j.status === 'error') {
-        showToast(j.status === 'done' ? 'Hoàn tất cài đặt!' : 'Có lỗi xảy ra, xem nhật ký');
+        showToast(j.status === 'done' ? 'Hoàn tất cài đặt!' : 'Có lỗi xảy ra — kiểm tra Console');
         await refreshStatus();
         break;
       }
