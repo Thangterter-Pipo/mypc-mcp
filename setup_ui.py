@@ -309,57 +309,105 @@ def start_install_env_job() -> dict:
     return {"ok": True, "job_id": job_id, "log": "Đã bắt đầu cài đặt môi trường Python..."}
 
 
+TAILSCALE_INSTALLER_URL = "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe"
+
+
 def start_tailscale_install_job() -> dict:
     if _find_tailscale():
         return {"ok": True, "log": "Tailscale đã được cài đặt sẵn trên máy."}
-    winget = shutil.which("winget")
-    if not winget:
-        return {
-            "ok": False,
-            "log": "Máy chưa có winget. Hãy bấm nút 'Tải bộ cài thủ công' (https://tailscale.com/download).",
-        }
-    job_id = _create_job("Cài đặt Tailscale (winget)")
+    job_id = _create_job("Tải & Cài đặt Tailscale (chính thức)")
 
     def worker() -> None:
         try:
-            _update_job(job_id, progress=10, stage="Đang tìm gói Tailscale trên winget...", line="Chạy: winget install -e --id Tailscale.Tailscale")
-            pct = [12]
+            import tempfile
 
-            def on_winget_line(line: str) -> None:
-                low = line.lower()
-                m = re.search(r"(\d{1,3})%", line)
-                if m:
-                    val = int(m.group(1))
-                    mapped = 20 + int(val * 0.5)
-                    pct[0] = max(pct[0], min(75, mapped))
-                    _update_job(job_id, progress=pct[0], stage=f"Đang tải Tailscale ({val}%)...")
-                elif "found tailscale" in low:
-                    pct[0] = max(pct[0], 20)
-                    _update_job(job_id, progress=pct[0], stage="Đã tìm thấy Tailscale, chuẩn bị tải...")
-                elif "verified" in low or "hash" in low:
-                    pct[0] = max(pct[0], 78)
-                    _update_job(job_id, progress=pct[0], stage="Đã kiểm tra chữ ký, đang cài đặt...")
-                elif "starting package install" in low:
-                    pct[0] = max(pct[0], 85)
-                    _update_job(job_id, progress=pct[0], stage="Đang cài đặt Tailscale vào Windows...")
-                elif "successfully installed" in low:
-                    pct[0] = 100
-                    _update_job(job_id, progress=100, stage="Đã cài đặt Tailscale thành công!")
-
-            rc = _stream_cmd(
-                [winget, "install", "-e", "--id", "Tailscale.Tailscale", "--accept-package-agreements", "--accept-source-agreements"],
+            dest = Path(tempfile.gettempdir()) / "tailscale-setup-latest.exe"
+            _update_job(
                 job_id,
-                on_winget_line,
+                progress=5,
+                stage="Đang kết nối máy chủ pkgs.tailscale.com...",
+                line=f"Tải trực tiếp: {TAILSCALE_INSTALLER_URL}",
             )
-            if rc == 0:
-                _update_job(job_id, progress=100, status="done", stage="Đã cài đặt Tailscale thành công! Hãy bấm 'Đăng nhập Tailscale'.")
-            else:
-                _update_job(job_id, status="error", stage=f"Cài Tailscale thất bại (mã {rc}). Có thể dùng nút tải thủ công.")
+            req = urllib.request.Request(
+                TAILSCALE_INSTALLER_URL,
+                headers={"User-Agent": "MyPC-MCP-Setup/1.0"},
+            )
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                total = int(resp.headers.get("Content-Length") or "0")
+                downloaded = 0
+                last_report = 0.0
+                with dest.open("wb") as out_f:
+                    while True:
+                        chunk = resp.read(65536)
+                        if not chunk:
+                            break
+                        out_f.write(chunk)
+                        downloaded += len(chunk)
+                        now = time.monotonic()
+                        if now - last_report >= 0.25:
+                            last_report = now
+                            mb_done = downloaded / (1024 * 1024)
+                            if total > 0:
+                                mb_total = total / (1024 * 1024)
+                                dl_pct = int(downloaded * 100 / total)
+                                mapped = 5 + int(dl_pct * 0.75)
+                                _update_job(
+                                    job_id,
+                                    progress=min(80, mapped),
+                                    stage=f"Đang tải bộ cài Tailscale: {mb_done:.1f} / {mb_total:.1f} MB ({dl_pct}%)",
+                                )
+                            else:
+                                _update_job(
+                                    job_id,
+                                    progress=45,
+                                    stage=f"Đang tải bộ cài Tailscale: {mb_done:.1f} MB...",
+                                )
+
+            mb_final = dest.stat().st_size / (1024 * 1024)
+            _update_job(
+                job_id,
+                progress=82,
+                stage="Tải xong! Đang mở trình cài đặt Tailscale...",
+                line=f"Đã tải xong {mb_final:.1f} MB -> {dest}",
+            )
+            os.startfile(str(dest))  # launches with normal Windows UAC prompt
+            _update_job(
+                job_id,
+                progress=88,
+                stage="Đang chờ bạn bấm Next/Install trong cửa sổ cài đặt Tailscale...",
+                line="Cửa sổ cài đặt Tailscale đã mở. Hãy xác nhận UAC và hoàn tất cài đặt...",
+            )
+
+            # Wait up to 3 minutes for tailscale.exe to appear
+            for _ in range(120):
+                if _find_tailscale():
+                    _update_job(
+                        job_id,
+                        progress=100,
+                        status="done",
+                        stage="Đã cài đặt Tailscale thành công! Hãy bấm 'Đăng nhập Tailscale'.",
+                        line="Phát hiện Tailscale CLI đã sẵn sàng trên máy!",
+                    )
+                    return
+                time.sleep(1.5)
+
+            _update_job(
+                job_id,
+                progress=90,
+                status="done",
+                stage="Bộ cài đã mở. Sau khi cài xong, bấm 'Làm mới trạng thái'.",
+                line="Hết thời gian chờ tự động (3 phút). Nếu bạn vừa hoàn tất cài đặt, bấm 'Làm mới trạng thái'.",
+            )
         except Exception as exc:
-            _update_job(job_id, status="error", stage=f"Lỗi: {exc}", line=str(exc))
+            _update_job(
+                job_id,
+                status="error",
+                stage=f"Lỗi tải/cài Tailscale: {exc}",
+                line=f"Lỗi: {exc}\nBạn có thể bấm 'Tải bộ cài thủ công' (https://tailscale.com/download).",
+            )
 
     threading.Thread(target=worker, daemon=True).start()
-    return {"ok": True, "job_id": job_id, "log": "Đang bắt đầu tải và cài đặt Tailscale..."}
+    return {"ok": True, "job_id": job_id, "log": "Đang bắt đầu tải bộ cài chính thức Tailscale..."}
 
 
 def action_tailscale_login() -> dict:
@@ -622,7 +670,7 @@ HTML_PAGE = r"""<!doctype html>
     <h2><span class="step">2</span> Cài đặt &amp; Đăng nhập Tailscale</h2>
     <div class="hint">Tailscale giúp tạo đường dẫn HTTPS an toàn cho máy tính mà không cần mở port router hay thuê VPS. Sau khi đăng nhập, nhớ bật <b>MagicDNS</b> &amp; <b>HTTPS Certificates</b> trong Tailscale Admin.</div>
     <div class="btns">
-      <button class="primary" onclick="runAction('/api/tailscale-install', {}, this)">Cài Tailscale tự động (winget)</button>
+      <button class="primary" onclick="runAction('/api/tailscale-install', {}, this)">Tải &amp; Cài Tailscale tự động</button>
       <button onclick="window.open('https://tailscale.com/download', '_blank')">Tải bộ cài thủ công</button>
       <button class="success" onclick="runAction('/api/tailscale-login', {}, this)">Đăng nhập Tailscale</button>
       <button onclick="window.open('https://login.tailscale.com/admin/dns', '_blank')">Mở trang bật MagicDNS &amp; HTTPS</button>
