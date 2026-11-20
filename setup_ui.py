@@ -32,6 +32,83 @@ UI_HOST = "127.0.0.1"
 UI_PORT = int(os.environ.get("MYPC_UI_PORT", "3099"))
 
 CREATE_NO_WINDOW = getattr(sp, "CREATE_NO_WINDOW", 0)
+JOBS: dict[str, dict] = {}
+JOBS_LOCK = threading.Lock()
+
+
+def _create_job(title: str) -> str:
+    job_id = secrets.token_hex(6)
+    with JOBS_LOCK:
+        JOBS[job_id] = {
+            "id": job_id,
+            "title": title,
+            "status": "running",
+            "progress": 5,
+            "stage": "Đang khởi tạo...",
+            "logs": [],
+            "action_url": "",
+        }
+    return job_id
+
+
+def _update_job(job_id: str, *, progress: int | None = None, stage: str | None = None, line: str | None = None, status: str | None = None, action_url: str | None = None) -> None:
+    with JOBS_LOCK:
+        job = JOBS.get(job_id)
+        if not job:
+            return
+        if progress is not None:
+            job["progress"] = max(0, min(100, int(progress)))
+        if stage is not None:
+            job["stage"] = stage
+        if line is not None:
+            clean = line.rstrip("\r\n")
+            if clean:
+                job["logs"].append(clean)
+                if len(job["logs"]) > 400:
+                    job["logs"] = job["logs"][-400:]
+        if status is not None:
+            job["status"] = status
+        if action_url is not None:
+            job["action_url"] = action_url
+
+
+def _get_job(job_id: str) -> dict | None:
+    with JOBS_LOCK:
+        job = JOBS.get(job_id)
+        if not job:
+            return None
+        return {
+            "id": job["id"],
+            "title": job["title"],
+            "status": job["status"],
+            "progress": job["progress"],
+            "stage": job["stage"],
+            "log": "\n".join(job["logs"]),
+            "action_url": job["action_url"],
+        }
+
+
+def _stream_cmd(cmd: list[str], job_id: str, on_line=None) -> int:
+    proc = sp.Popen(
+        cmd,
+        cwd=str(BASE_DIR),
+        stdout=sp.PIPE,
+        stderr=sp.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        bufsize=1,
+        creationflags=CREATE_NO_WINDOW,
+    )
+    assert proc.stdout is not None
+    for raw in proc.stdout:
+        line = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", raw).strip()
+        if not line:
+            continue
+        _update_job(job_id, line=line)
+        if on_line:
+            on_line(line)
+    return proc.wait()
 
 
 def _find_tailscale() -> str | None:
@@ -180,52 +257,109 @@ def get_system_status() -> dict:
     }
 
 
-def action_install_env() -> dict:
-    venv_py = BASE_DIR / ".venv" / "Scripts" / "python.exe"
-    logs: list[str] = []
-    if not venv_py.exists():
-        logs.append("[1/3] Tạo môi trường ảo .venv ...")
-        rc, out, err = _run_cmd([sys.executable, "-m", "venv", str(BASE_DIR / ".venv")], timeout=120)
-        logs.append((out + err).strip())
-        if rc != 0:
-            return {"ok": False, "log": "\n".join(logs)}
-    else:
-        logs.append("[1/3] Đã có sẵn .venv.")
+def start_install_env_job() -> dict:
+    job_id = _create_job("Cài đặt môi trường Python (.venv & thư viện)")
 
-    logs.append("[2/3] Cài đặt thư viện từ requirements.txt ...")
-    rc, out, err = _run_cmd([str(venv_py), "-m", "pip", "install", "-r", str(BASE_DIR / "requirements.txt")], timeout=300)
-    logs.append((out + err).strip()[-2500:])
-    if rc != 0:
-        return {"ok": False, "log": "\n".join(logs)}
+    def worker() -> None:
+        try:
+            venv_py = BASE_DIR / ".venv" / "Scripts" / "python.exe"
+            if not venv_py.exists():
+                _update_job(job_id, progress=10, stage="Bước 1/3: Đang tạo môi trường ảo .venv...", line="[1/3] Tạo môi trường ảo .venv ...")
+                rc = _stream_cmd([sys.executable, "-m", "venv", str(BASE_DIR / ".venv")], job_id)
+                if rc != 0:
+                    _update_job(job_id, status="error", stage="Lỗi khi tạo .venv.")
+                    return
+                _update_job(job_id, progress=25, line="Đã tạo .venv thành công.")
+            else:
+                _update_job(job_id, progress=25, stage="Bước 1/3: Đã có sẵn .venv", line="[1/3] Đã có sẵn .venv.")
 
-    logs.append("[3/3] Kiểm tra file .env ...")
-    if not ENV_FILE.exists():
-        ts_info = get_tailscale_info()
-        write_env({"MYPC_MCP_BASE_URL": ts_info.get("url", "")})
-        logs.append("Đã tạo mới .env với API Key và Consent PIN ngẫu nhiên.")
-    else:
-        logs.append("Giữ nguyên file .env hiện có.")
+            _update_job(job_id, progress=30, stage="Bước 2/3: Đang cài thư viện (pip install)...", line="[2/3] Cài đặt thư viện từ requirements.txt ...")
+            step_pct = [30]
 
-    return {"ok": True, "log": "\n".join(x for x in logs if x)}
+            def on_pip_line(line: str) -> None:
+                low = line.lower()
+                if low.startswith("collecting ") or low.startswith("downloading "):
+                    step_pct[0] = min(78, step_pct[0] + 3)
+                    _update_job(job_id, progress=step_pct[0], stage=f"Đang tải: {line[:70]}")
+                elif "installing collected packages" in low:
+                    step_pct[0] = 85
+                    _update_job(job_id, progress=85, stage="Đang cài đặt các gói vào .venv...")
+                elif "successfully installed" in low:
+                    step_pct[0] = 92
+                    _update_job(job_id, progress=92, stage="Đã cài xong các thư viện Python.")
+
+            rc = _stream_cmd([str(venv_py), "-m", "pip", "install", "-r", str(BASE_DIR / "requirements.txt")], job_id, on_pip_line)
+            if rc != 0:
+                _update_job(job_id, status="error", stage="Lỗi khi cài thư viện Python.")
+                return
+
+            _update_job(job_id, progress=95, stage="Bước 3/3: Kiểm tra tệp cấu hình .env...", line="[3/3] Kiểm tra file .env ...")
+            if not ENV_FILE.exists():
+                ts_info = get_tailscale_info()
+                write_env({"MYPC_MCP_BASE_URL": ts_info.get("url", "")})
+                _update_job(job_id, line="Đã tạo mới .env với API Key và Consent PIN ngẫu nhiên.")
+            else:
+                _update_job(job_id, line="Giữ nguyên file .env hiện có.")
+
+            _update_job(job_id, progress=100, status="done", stage="Hoàn tất cài đặt môi trường Python!")
+        except Exception as exc:
+            _update_job(job_id, status="error", stage=f"Lỗi: {exc}", line=str(exc))
+
+    threading.Thread(target=worker, daemon=True).start()
+    return {"ok": True, "job_id": job_id, "log": "Đã bắt đầu cài đặt môi trường Python..."}
 
 
-def action_tailscale_install() -> dict:
+def start_tailscale_install_job() -> dict:
     if _find_tailscale():
         return {"ok": True, "log": "Tailscale đã được cài đặt sẵn trên máy."}
     winget = shutil.which("winget")
     if not winget:
         return {
             "ok": False,
-            "log": "Máy chưa có winget. Hãy bấm nút 'Tải bộ cài Tailscale' (https://tailscale.com/download) để cài thủ công.",
+            "log": "Máy chưa có winget. Hãy bấm nút 'Tải bộ cài thủ công' (https://tailscale.com/download).",
         }
-    rc, out, err = _run_cmd(
-        [winget, "install", "-e", "--id", "Tailscale.Tailscale", "--accept-package-agreements", "--accept-source-agreements"],
-        timeout=300,
-    )
-    combined = (out + "\n" + err).strip()[-2500:]
-    if rc == 0:
-        return {"ok": True, "log": "Đã cài đặt Tailscale thành công! Hãy bấm 'Đăng nhập Tailscale' ở bước tiếp theo.\n" + combined}
-    return {"ok": False, "log": combined or f"winget trả về mã lỗi {rc}"}
+    job_id = _create_job("Cài đặt Tailscale (winget)")
+
+    def worker() -> None:
+        try:
+            _update_job(job_id, progress=10, stage="Đang tìm gói Tailscale trên winget...", line="Chạy: winget install -e --id Tailscale.Tailscale")
+            pct = [12]
+
+            def on_winget_line(line: str) -> None:
+                low = line.lower()
+                m = re.search(r"(\d{1,3})%", line)
+                if m:
+                    val = int(m.group(1))
+                    mapped = 20 + int(val * 0.5)
+                    pct[0] = max(pct[0], min(75, mapped))
+                    _update_job(job_id, progress=pct[0], stage=f"Đang tải Tailscale ({val}%)...")
+                elif "found tailscale" in low:
+                    pct[0] = max(pct[0], 20)
+                    _update_job(job_id, progress=pct[0], stage="Đã tìm thấy Tailscale, chuẩn bị tải...")
+                elif "verified" in low or "hash" in low:
+                    pct[0] = max(pct[0], 78)
+                    _update_job(job_id, progress=pct[0], stage="Đã kiểm tra chữ ký, đang cài đặt...")
+                elif "starting package install" in low:
+                    pct[0] = max(pct[0], 85)
+                    _update_job(job_id, progress=pct[0], stage="Đang cài đặt Tailscale vào Windows...")
+                elif "successfully installed" in low:
+                    pct[0] = 100
+                    _update_job(job_id, progress=100, stage="Đã cài đặt Tailscale thành công!")
+
+            rc = _stream_cmd(
+                [winget, "install", "-e", "--id", "Tailscale.Tailscale", "--accept-package-agreements", "--accept-source-agreements"],
+                job_id,
+                on_winget_line,
+            )
+            if rc == 0:
+                _update_job(job_id, progress=100, status="done", stage="Đã cài đặt Tailscale thành công! Hãy bấm 'Đăng nhập Tailscale'.")
+            else:
+                _update_job(job_id, status="error", stage=f"Cài Tailscale thất bại (mã {rc}). Có thể dùng nút tải thủ công.")
+        except Exception as exc:
+            _update_job(job_id, status="error", stage=f"Lỗi: {exc}", line=str(exc))
+
+    threading.Thread(target=worker, daemon=True).start()
+    return {"ok": True, "job_id": job_id, "log": "Đang bắt đầu tải và cài đặt Tailscale..."}
 
 
 def action_tailscale_login() -> dict:
@@ -448,6 +582,15 @@ HTML_PAGE = r"""<!doctype html>
   .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
   .banner { display: none; padding: 10px 14px; border-radius: 8px; margin-top: 10px; font-size: 13px; background: rgba(245,158,11,.14); border: 1px solid rgba(245,158,11,.4); color: #fde68a; }
   .banner a { color: #60a5fa; font-weight: 600; }
+  .prog-wrap { display: none; background: #10141f; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .prog-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 8px; gap: 10px; }
+  .prog-title { font-weight: 600; color: var(--text); }
+  .prog-pct { font-family: Consolas, monospace; font-weight: 700; color: #60a5fa; }
+  .prog-track { width: 100%; height: 10px; background: #1e2433; border-radius: 999px; overflow: hidden; }
+  .prog-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 999px; transition: width .35s ease; }
+  .prog-bar.done { background: linear-gradient(90deg, #16a34a, #22c55e); }
+  .prog-bar.error { background: linear-gradient(90deg, #dc2626, #ef4444); }
+  .prog-stage { font-size: 12px; color: var(--muted); margin-top: 7px; }
 </style>
 </head>
 <body>
@@ -567,8 +710,16 @@ HTML_PAGE = r"""<!doctype html>
   </div>
 
   <div class="card">
-    <h2>Nhật ký thực thi (Console)</h2>
-    <div class="console" id="console">Sẵn sàng. Hãy kiểm tra trạng thái ở trên và làm lần lượt từ Bước 1 → Bước 3.</div>
+    <h2>Tiến trình &amp; Nhật ký thực thi (Console)</h2>
+    <div class="prog-wrap" id="prog-wrap">
+      <div class="prog-head">
+        <span class="prog-title" id="prog-title">Đang cài đặt...</span>
+        <span class="prog-pct" id="prog-pct">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
+      <div class="prog-stage" id="prog-stage">Đang chuẩn bị...</div>
+    </div>
+    <div class="console" id="console">Sẵn sàng. Hãy kiểm tra trạng thái ở trên và làm lần lượt từ Bước 1 → Bước 4.</div>
   </div>
 </div>
 
@@ -629,24 +780,59 @@ async function refreshStatus() {
   document.getElementById('f-baseurl').value = d.env.MYPC_MCP_BASE_URL || d.tailscale.url || '';
   updateClientSnippets();
 }
+function setProgress(show, title, pct, stage, status) {
+  const wrap = document.getElementById('prog-wrap');
+  wrap.style.display = show ? 'block' : 'none';
+  if (!show) return;
+  document.getElementById('prog-title').textContent = title || 'Đang thực thi...';
+  document.getElementById('prog-pct').textContent = `${pct}%`;
+  document.getElementById('prog-stage').textContent = stage || '';
+  const bar = document.getElementById('prog-bar');
+  bar.style.width = `${pct}%`;
+  bar.className = 'prog-bar' + (status === 'done' ? ' done' : (status === 'error' ? ' error' : ''));
+}
+async function pollJob(jobId, btn) {
+  try {
+    while (true) {
+      const r = await fetch(`/api/job/${jobId}`);
+      const j = await r.json();
+      setProgress(true, j.title, j.progress, j.stage, j.status);
+      if (j.log) logMsg(j.log);
+      if (j.status === 'done' || j.status === 'error') {
+        await refreshStatus();
+        break;
+      }
+      await new Promise(res => setTimeout(res, 500));
+    }
+  } catch (e) {
+    logMsg('[LỖI] ' + e);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 async function runAction(path, body, btn) {
   if (btn) btn.disabled = true;
   logMsg('Đang thực thi...');
   try {
     const r = await fetch(path, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const d = await r.json();
+    if (d.job_id) {
+      document.getElementById('prog-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      await pollJob(d.job_id, btn);
+      return;
+    }
     logMsg((d.ok ? '[OK] ' : '[LỖI] ') + (d.log || 'Hoàn tất.'));
     const banner = document.getElementById('ts-banner');
     if (d.action_url) {
       banner.style.display = 'block';
-      banner.innerHTML = `Cần kích hoạt Funnel lần đầu trên tài khoản Tailscale: <a href="${d.action_url}" target="_blank" rel="noopener">Bấm vào đây để Enable Funnel</a>, sau đó bấm lại "Áp dụng Tailscale".`;
+      banner.innerHTML = `Cần thao tác trên Tailscale: <a href="${d.action_url}" target="_blank" rel="noopener">Mở liên kết Tailscale</a>, sau đó bấm làm mới.`;
     } else {
       banner.style.display = 'none';
     }
     await refreshStatus();
+    if (btn) btn.disabled = false;
   } catch (e) {
     logMsg('[LỖI] ' + e);
-  } finally {
     if (btn) btn.disabled = false;
   }
 }
@@ -704,6 +890,14 @@ class SetupHandler(BaseHTTPRequestHandler):
         if self.path == "/api/status":
             self._send_json(get_system_status())
             return
+        if self.path.startswith("/api/job/"):
+            job_id = self.path.split("/api/job/", 1)[1].strip("/")
+            job = _get_job(job_id)
+            if job is None:
+                self.send_error(HTTPStatus.NOT_FOUND)
+            else:
+                self._send_json(job)
+            return
         self.send_error(HTTPStatus.NOT_FOUND)
 
     def do_POST(self) -> None:
@@ -718,9 +912,9 @@ class SetupHandler(BaseHTTPRequestHandler):
             body = {}
 
         if self.path == "/api/install":
-            self._send_json(action_install_env())
+            self._send_json(start_install_env_job())
         elif self.path == "/api/tailscale-install":
-            self._send_json(action_tailscale_install())
+            self._send_json(start_tailscale_install_job())
         elif self.path == "/api/tailscale-login":
             self._send_json(action_tailscale_login())
         elif self.path == "/api/save-env":
