@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" fill="none">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="0%" r="75%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#0b0d11" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#171b24"/>
+      <stop offset="100%" stop-color="#11141b"/>
+    </linearGradient>
+    <linearGradient id="prog" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="1280" height="420" rx="18" fill="#0b0d11"/>
+  <rect width="1280" height="420" rx="18" fill="url(#glow)"/>
+  <rect x="0.5" y="0.5" width="1279" height="419" rx="17.5" stroke="#ffffff" stroke-opacity="0.09"/>
+
+  <!-- Left Hero Copy -->
+  <g transform="translate(56, 62)">
+    <!-- Logo mark -->
+    <rect width="42" height="42" rx="11" fill="#1b202c" stroke="#ffffff" stroke-opacity="0.14"/>
+    <rect x="10" y="12" width="22" height="14" rx="2.5" stroke="#f8fafc" stroke-width="2"/>
+    <line x1="16" y1="30" x2="26" y2="30" stroke="#f8fafc" stroke-width="2" stroke-linecap="round"/>
+    <line x1="21" y1="26" x2="21" y2="30" stroke="#f8fafc" stroke-width="2" stroke-linecap="round"/>
+
+    <text x="56" y="29" fill="#f8fafc" font-family="Inter, Segoe UI, system-ui, sans-serif" font-size="26" font-weight="700" letter-spacing="-0.5">MyPC MCP</text>
+
+    <text x="0" y="92" fill="#f3f4f6" font-family="Inter, Segoe UI, system-ui, sans-serif" font-size="34" font-weight="700" letter-spacing="-0.8">Control your Windows PC</text>
+    <text x="0" y="134" fill="#93c5fd" font-family="Inter, Segoe UI, system-ui, sans-serif" font-size="34" font-weight="700" letter-spacing="-0.8">from Web AI Clients.</text>
+
+    <text x="0" y="176" fill="#9ca3af" font-family="Inter, Segoe UI, system-ui, sans-serif" font-size="16">ChatGPT Web · Claude Web · Gemini Web over Tailscale Funnel HTTPS.</text>
+    <text x="0" y="202" fill="#9ca3af" font-family="Inter, Segoe UI, system-ui, sans-serif" font-size="16">Zero VPS. Zero port forwarding. OAuth 2.1 + Owner PIN protection.</text>
+
+    <!-- Feature Pills -->
+    <g transform="translate(0, 236)">
+      <rect width="142" height="32" rx="16" fill="#13161d" stroke="#ffffff" stroke-opacity="0.1"/>
+      <circle cx="16" cy="16" r="4" fill="#22c55e"/>
+      <text x="28" y="21" fill="#e5e7eb" font-family="JetBrains Mono, Consolas, monospace" font-size="12" font-weight="600">50+ PC Tools</text>
+
+      <rect x="154" width="166" height="32" rx="16" fill="#13161d" stroke="#ffffff" stroke-opacity="0.1"/>
+      <circle cx="170" cy="16" r="4" fill="#3b82f6"/>
+      <text x="182" y="21" fill="#e5e7eb" font-family="JetBrains Mono, Consolas, monospace" font-size="12" font-weight="600">Tailscale Funnel</text>
+
+      <rect x="332" width="150" height="32" rx="16" fill="#13161d" stroke="#ffffff" stroke-opacity="0.1"/>
+      <circle cx="348" cy="16" r="4" fill="#f59e0b"/>
+      <text x="360" y="21" fill="#e5e7eb" font-family="JetBrains Mono, Consolas, monospace" font-size="12" font-weight="600">1-Click Web UI</text>
+    </g>
+  </g>
+
+  <!-- Right Mockup: Control Center Window -->
+  <g transform="translate(650, 44)">
+    <rect width="576" height="332" rx="14" fill="url(#cardBg)" stroke="#ffffff" stroke-opacity="0.12"/>
+    <!-- Window Top Bar -->
+    <line x1="0" y1="40" x2="576" y2="40" stroke="#ffffff" stroke-opacity="0.08"/>
+    <circle cx="22" cy="20" r="5" fill="#ff5f57"/>
+    <circle cx="38" cy="20" r="5" fill="#febc2e"/>
+    <circle cx="54" cy="20" r="5" fill="#28c840"/>
+    <text x="74" y="24" fill="#e5e7eb" font-family="Inter, Segoe UI, sans-serif" font-size="12" font-weight="600">MyPC MCP — Control Center</text>
+    <rect x="448" y="10" width="114" height="20" rx="10" fill="#0e1016" stroke="#22c55e" stroke-opacity="0.4"/>
+    <circle cx="462" cy="20" r="3.5" fill="#22c55e"/>
+    <text x="472" y="24" fill="#86efac" font-family="JetBrains Mono, Consolas, monospace" font-size="10.5" font-weight="600">UP :3080</text>
+
+    <!-- Left mini column -->
+    <g transform="translate(16, 54)">
+      <rect width="292" height="72" rx="10" fill="#0e1016" stroke="#ffffff" stroke-opacity="0.08"/>
+      <text x="14" y="22" fill="#93c5fd" font-family="Inter, Segoe UI, sans-serif" font-size="11.5" font-weight="700">1. Python &amp; Tailscale</text>
+      <rect x="14" y="34" width="124" height="26" rx="6" fill="#f8fafc"/>
+      <text x="27" y="51" fill="#09090b" font-family="Inter, Segoe UI, sans-serif" font-size="11" font-weight="700">Cài .venv &amp; Lib</text>
+      <rect x="146" y="34" width="132" height="26" rx="6" fill="#3b82f6"/>
+      <text x="163" y="51" fill="#ffffff" font-family="Inter, Segoe UI, sans-serif" font-size="11" font-weight="700">Tải &amp; Cài Tailscale</text>
+
+      <rect y="82" width="292" height="86" rx="10" fill="#0e1016" stroke="#ffffff" stroke-opacity="0.08"/>
+      <text x="14" y="104" fill="#93c5fd" font-family="Inter, Segoe UI, sans-serif" font-size="11.5" font-weight="700">2. Bảo mật &amp; Tailscale Funnel</text>
+      <rect x="14" y="114" width="264" height="24" rx="5" fill="#13161d" stroke="#3b82f6" stroke-opacity="0.35"/>
+      <text x="24" y="130" fill="#93c5fd" font-family="JetBrains Mono, Consolas, monospace" font-size="10.5">https://my-pc.tailnet.ts.net/mcp</text>
+      <text x="14" y="156" fill="#9ca3af" font-family="Inter, Segoe UI, sans-serif" font-size="10.5">OAuth 2.1 + PKCE · Owner Consent PIN</text>
+
+      <rect y="178" width="292" height="84" rx="10" fill="#0e1016" stroke="#ffffff" stroke-opacity="0.08"/>
+      <text x="14" y="200" fill="#93c5fd" font-family="Inter, Segoe UI, sans-serif" font-size="11.5" font-weight="700">3. Điều khiển Server</text>
+      <rect x="14" y="212" width="128" height="28" rx="6" fill="#22c55e" fill-opacity="0.16" stroke="#22c55e" stroke-opacity="0.45"/>
+      <text x="33" y="230" fill="#86efac" font-family="Inter, Segoe UI, sans-serif" font-size="11" font-weight="700">Khởi chạy Server</text>
+      <rect x="150" y="212" width="128" height="28" rx="6" fill="#1a1e28" stroke="#ffffff" stroke-opacity="0.14"/>
+      <text x="176" y="230" fill="#e5e7eb" font-family="Inter, Segoe UI, sans-serif" font-size="11" font-weight="600">Test kết nối</text>
+    </g>
+
+    <!-- Right mini terminal -->
+    <g transform="translate(320, 54)">
+      <rect width="240" height="262" rx="10" fill="#080a0f" stroke="#ffffff" stroke-opacity="0.08"/>
+      <text x="12" y="22" fill="#e5e7eb" font-family="Inter, Segoe UI, sans-serif" font-size="11" font-weight="600">Tiến trình &amp; Nhật ký</text>
+      <text x="196" y="22" fill="#93c5fd" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="700">100%</text>
+      <rect x="12" y="31" width="216" height="6" rx="3" fill="#1a1e28"/>
+      <rect x="12" y="31" width="216" height="6" rx="3" fill="url(#prog)"/>
+      <text x="12" y="60" fill="#86efac" font-family="JetBrains Mono, Consolas, monospace" font-size="10">[OK] Python .venv ready</text>
+      <text x="12" y="80" fill="#86efac" font-family="JetBrains Mono, Consolas, monospace" font-size="10">[OK] Tailscale Funnel :3080</text>
+      <text x="12" y="100" fill="#93c5fd" font-family="JetBrains Mono, Consolas, monospace" font-size="10">[GET] /health -> 200 OK</text>
+      <text x="12" y="120" fill="#93c5fd" font-family="JetBrains Mono, Consolas, monospace" font-size="10">[POST] /mcp -> Session Ready</text>
+      <text x="12" y="144" fill="#9ca3af" font-family="JetBrains Mono, Consolas, monospace" font-size="10">Ready for ChatGPT / Claude /</text>
+      <text x="12" y="160" fill="#9ca3af" font-family="JetBrains Mono, Consolas, monospace" font-size="10">Gemini Web OAuth connection.</text>
+    </g>
+  </g>
+</svg>
