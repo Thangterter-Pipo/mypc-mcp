@@ -585,189 +585,203 @@ HTML_PAGE = r"""<!doctype html>
 <title>MyPC MCP — Setup & Control Panel</title>
 <style>
   :root {
-    --bg: #0f1117; --card: #161a23; --border: #262c3a; --text: #e6edf3;
+    --bg: #0c0f16; --card: #151923; --border: #252c3b; --text: #e6edf3;
     --muted: #8b949e; --accent: #3b82f6; --accent-h: #2563eb;
-    --ok: #22c55e; --warn: #f59e0b; --err: #ef4444; --input: #0d1017;
+    --ok: #22c55e; --warn: #f59e0b; --err: #ef4444; --input: #0b0e14;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
-  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 48px; }
-  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
-  h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-  .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 18px; }
-  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
-  .stat .k { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-  .stat .v { font-size: 15px; font-weight: 600; margin-top: 6px; display: flex; align-items: center; gap: 8px; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  html, body { height: 100%; margin: 0; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 13px; }
+  .app { height: 100vh; display: flex; flex-direction: column; padding: 12px 16px; gap: 10px; max-width: 1440px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; flex-shrink: 0; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .brand .tag { font-size: 11px; padding: 2px 7px; border-radius: 999px; background: rgba(59,130,246,.16); color: #60a5fa; font-weight: 600; }
+  .pills { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--input); border: 1px solid var(--border); font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 7px var(--ok); }
   .dot.warn { background: var(--warn); }
   .dot.err { background: var(--err); }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
-  .card h2 { margin: 0 0 14px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
-  .step { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 7px; background: rgba(59,130,246,.16); color: #60a5fa; font-size: 13px; font-weight: 700; }
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
-  input, select { width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--input); color: var(--text); font-size: 13.5px; }
+  .main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 10px; }
+  .col { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 11px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .card.grow { flex: 1; min-height: 0; }
+  .card h2 { margin: 0; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .step { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; background: rgba(59,130,246,.18); color: #60a5fa; font-size: 11.5px; font-weight: 700; flex-shrink: 0; }
+  .row-setup { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; background: var(--input); border: 1px solid var(--border); border-radius: 8px; flex-wrap: wrap; }
+  .row-setup .lbl { font-weight: 600; font-size: 12.5px; }
+  .row-setup .sub { font-size: 11.5px; color: var(--muted); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+  .span2 { grid-column: span 2; }
+  label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; font-weight: 500; }
+  input, select { width: 100%; padding: 6px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--input); color: var(--text); font-size: 12.5px; }
   input:focus, select:focus { outline: none; border-color: var(--accent); }
-  .input-row { display: flex; gap: 6px; }
-  .input-row input { flex: 1; }
-  .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-  button { padding: 9px 15px; border-radius: 8px; border: 1px solid var(--border); background: #212634; color: var(--text); font-size: 13.5px; font-weight: 600; cursor: pointer; transition: .15s; }
-  button:hover { background: #2a3142; }
+  .input-row { display: flex; gap: 4px; align-items: center; }
+  .input-row input { flex: 1; min-width: 0; }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  button { padding: 6px 11px; border-radius: 7px; border: 1px solid var(--border); background: #212736; color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer; transition: .12s; white-space: nowrap; }
+  button:hover { background: #2b3347; }
   button:disabled { opacity: .5; cursor: wait; }
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   button.primary:hover { background: var(--accent-h); }
   button.success { background: #16a34a; border-color: #16a34a; color: #fff; }
-  button.danger { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.4); color: #fca5a5; }
-  button.sm { padding: 7px 10px; font-size: 12px; }
-  .codebox { background: var(--input); border: 1px solid var(--border); border-radius: 8px; padding: 11px 13px; font-family: Consolas, monospace; font-size: 12.5px; word-break: break-all; white-space: pre-wrap; position: relative; }
-  .endpoint { font-size: 14px; color: #93c5fd; font-weight: 600; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-  .tab { padding: 6px 12px; border-radius: 8px; font-size: 12.5px; background: var(--input); border: 1px solid var(--border); cursor: pointer; color: var(--muted); }
+  button.danger { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.4); color: #fca5a5; }
+  button.xs { padding: 5px 7px; font-size: 11px; }
+  .ctrl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .codebox { background: var(--input); border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px; font-family: Consolas, monospace; font-size: 11.5px; word-break: break-all; white-space: pre-wrap; line-height: 1.45; }
+  .endpoint { color: #93c5fd; font-weight: 600; font-size: 12px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tabs { display: flex; gap: 6px; }
+  .tab { padding: 4px 10px; border-radius: 6px; font-size: 11.5px; background: var(--input); border: 1px solid var(--border); cursor: pointer; color: var(--muted); font-weight: 600; }
   .tab.active { background: rgba(59,130,246,.18); border-color: var(--accent); color: #93c5fd; }
-  .console { background: #090b10; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: Consolas, monospace; font-size: 12.5px; color: #cbd5e1; min-height: 92px; max-height: 260px; overflow-y: auto; white-space: pre-wrap; }
-  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .banner { display: none; padding: 10px 14px; border-radius: 8px; margin-top: 10px; font-size: 13px; background: rgba(245,158,11,.14); border: 1px solid rgba(245,158,11,.4); color: #fde68a; }
-  .banner a { color: #60a5fa; font-weight: 600; }
-  .prog-wrap { display: none; background: #10141f; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
-  .prog-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 8px; gap: 10px; }
-  .prog-title { font-weight: 600; color: var(--text); }
-  .prog-pct { font-family: Consolas, monospace; font-weight: 700; color: #60a5fa; }
-  .prog-track { width: 100%; height: 10px; background: #1e2433; border-radius: 999px; overflow: hidden; }
-  .prog-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 999px; transition: width .35s ease; }
+  .prog-wrap { background: #0f131d; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; flex-shrink: 0; }
+  .prog-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 5px; gap: 8px; }
+  .prog-title { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prog-pct { font-family: Consolas, monospace; font-weight: 700; color: #60a5fa; flex-shrink: 0; }
+  .prog-track { width: 100%; height: 7px; background: #1e2433; border-radius: 999px; overflow: hidden; }
+  .prog-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 999px; transition: width .3s ease; }
   .prog-bar.done { background: linear-gradient(90deg, #16a34a, #22c55e); }
   .prog-bar.error { background: linear-gradient(90deg, #dc2626, #ef4444); }
-  .prog-stage { font-size: 12px; color: var(--muted); margin-top: 7px; }
+  .prog-stage { font-size: 11px; color: var(--muted); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .console { flex: 1; min-height: 60px; background: #080a0f; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-family: Consolas, monospace; font-size: 11.5px; color: #cbd5e1; overflow-y: auto; white-space: pre-wrap; line-height: 1.4; }
+  .banner { display: none; padding: 6px 10px; border-radius: 7px; font-size: 11.5px; background: rgba(245,158,11,.14); border: 1px solid rgba(245,158,11,.4); color: #fde68a; }
+  .banner a { color: #60a5fa; font-weight: 600; }
+  @media (max-width: 960px) {
+    html, body { overflow: auto; }
+    .app { height: auto; }
+    .main { grid-template-columns: 1fr; }
+    .ctrl-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>MyPC MCP — Setup & Control Panel</h1>
-      <div class="sub">Giao diện cài đặt cục bộ (chỉ chạy trên 127.0.0.1) — hỗ trợ Tailscale Funnel / Serve</div>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <h1>MyPC MCP</h1>
+      <span class="tag">127.0.0.1 Only</span>
     </div>
-    <button onclick="refreshStatus()">Làm mới trạng thái</button>
+    <div class="pills">
+      <div class="pill" id="st-py"><span class="dot warn"></span>Python...</div>
+      <div class="pill" id="st-ts"><span class="dot warn"></span>Tailscale...</div>
+      <div class="pill" id="st-srv"><span class="dot warn"></span>Server...</div>
+      <div class="pill" id="st-env"><span class="dot warn"></span>.env...</div>
+      <button class="xs" onclick="refreshStatus()">Làm mới</button>
+    </div>
   </header>
 
-  <div class="grid">
-    <div class="stat"><div class="k">Python / .venv</div><div class="v" id="st-py"><span class="dot warn"></span>Đang kiểm tra...</div></div>
-    <div class="stat"><div class="k">Tailscale</div><div class="v" id="st-ts"><span class="dot warn"></span>Đang kiểm tra...</div></div>
-    <div class="stat"><div class="k">MyPC MCP Server</div><div class="v" id="st-srv"><span class="dot warn"></span>Đang kiểm tra...</div></div>
-    <div class="stat"><div class="k">Tệp cấu hình .env</div><div class="v" id="st-env"><span class="dot warn"></span>Đang kiểm tra...</div></div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step">1</span> Cài đặt môi trường Python</h2>
-    <div class="hint">Tự động tạo <code>.venv</code>, cài thư viện trong <code>requirements.txt</code> và sinh file <code>.env</code> kèm API Key &amp; PIN nếu chưa có.</div>
-    <div class="btns">
-      <button class="primary" onclick="runAction('/api/install', {}, this)">Cài đặt .venv &amp; Thư viện</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step">2</span> Cài đặt &amp; Đăng nhập Tailscale</h2>
-    <div class="hint">Tailscale giúp tạo đường dẫn HTTPS an toàn cho máy tính mà không cần mở port router hay thuê VPS. Sau khi đăng nhập, nhớ bật <b>MagicDNS</b> &amp; <b>HTTPS Certificates</b> trong Tailscale Admin.</div>
-    <div class="btns">
-      <button class="primary" onclick="runAction('/api/tailscale-install', {}, this)">Tải &amp; Cài Tailscale tự động</button>
-      <button onclick="window.open('https://tailscale.com/download', '_blank')">Tải bộ cài thủ công</button>
-      <button class="success" onclick="runAction('/api/tailscale-login', {}, this)">Đăng nhập Tailscale</button>
-      <button onclick="window.open('https://login.tailscale.com/admin/dns', '_blank')">Mở trang bật MagicDNS &amp; HTTPS</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step">3</span> Cấu hình bảo mật &amp; Chế độ Tailscale (.env)</h2>
-    <div class="form-grid">
-      <div>
-        <label>Chế độ Tailscale</label>
-        <select id="f-mode">
-          <option value="funnel">Funnel — HTTPS công khai (cho ChatGPT / Claude / Gemini Web)</option>
-          <option value="serve">Serve — Chỉ nội bộ Tailnet (an toàn cao nhất cho Claude Code / Cursor)</option>
-          <option value="none">Local only — Chỉ chạy 127.0.0.1</option>
-        </select>
-      </div>
-      <div>
-        <label>Cổng cục bộ (Port)</label>
-        <input id="f-port" type="number" value="3080">
-      </div>
-      <div>
-        <label>Consent PIN (nhập khi cấp quyền OAuth)</label>
-        <div class="input-row">
-          <input id="f-pin" type="password" placeholder="Nhập PIN mạnh...">
-          <button class="sm" onclick="toggleVis('f-pin')">Hiện</button>
-          <button class="sm" onclick="genSecret('f-pin', 12)">Sinh mới</button>
-          <button class="sm" onclick="copyVal('f-pin')">Copy</button>
+  <div class="main">
+    <div class="col">
+      <div class="card">
+        <h2><span class="step">1</span> Chuẩn bị Python &amp; Tailscale</h2>
+        <div class="row-setup">
+          <div><div class="lbl">Môi trường Python</div><div class="sub">Tạo .venv, cài thư viện &amp; sinh .env</div></div>
+          <button class="primary" onclick="runAction('/api/install', {}, this)">Cài .venv &amp; Thư viện</button>
+        </div>
+        <div class="row-setup">
+          <div><div class="lbl">Tailscale (HTTPS không cần VPS)</div><div class="sub">Tải trực tiếp bộ cài chính thức, đăng nhập &amp; bật MagicDNS</div></div>
+          <div class="btns">
+            <button class="primary" onclick="runAction('/api/tailscale-install', {}, this)">Tải &amp; Cài Tailscale</button>
+            <button class="success" onclick="runAction('/api/tailscale-login', {}, this)">Đăng nhập</button>
+            <button onclick="window.open('https://login.tailscale.com/admin/dns', '_blank')">MagicDNS</button>
+            <button onclick="window.open('https://tailscale.com/download', '_blank')">Tải tay</button>
+          </div>
         </div>
       </div>
-      <div>
-        <label>Static Bearer API Key</label>
-        <div class="input-row">
-          <input id="f-key" type="password" placeholder="Bearer API key...">
-          <button class="sm" onclick="toggleVis('f-key')">Hiện</button>
-          <button class="sm" onclick="genSecret('f-key', 32)">Sinh mới</button>
-          <button class="sm" onclick="copyVal('f-key')">Copy</button>
+
+      <div class="card grow">
+        <h2><span class="step">2</span> Cấu hình bảo mật &amp; Chế độ Tailscale (.env)</h2>
+        <div class="form-grid">
+          <div>
+            <label>Chế độ Tailscale</label>
+            <select id="f-mode">
+              <option value="funnel">Funnel — Công khai (ChatGPT/Claude/Gemini Web)</option>
+              <option value="serve">Serve — Nội bộ Tailnet (Claude Code/Cursor)</option>
+              <option value="none">Local only — Chỉ 127.0.0.1</option>
+            </select>
+          </div>
+          <div>
+            <label>Cổng cục bộ (Port)</label>
+            <input id="f-port" type="number" value="3080">
+          </div>
+          <div class="span2">
+            <label>Consent PIN (nhập khi duyệt OAuth)</label>
+            <div class="input-row">
+              <input id="f-pin" type="password" placeholder="Nhập PIN mạnh...">
+              <button class="xs" onclick="toggleVis('f-pin')">Hiện</button>
+              <button class="xs" onclick="genSecret('f-pin', 12)">Sinh mới</button>
+              <button class="xs" onclick="copyVal('f-pin')">Copy</button>
+            </div>
+          </div>
+          <div class="span2">
+            <label>Static Bearer API Key</label>
+            <div class="input-row">
+              <input id="f-key" type="password" placeholder="Bearer API key...">
+              <button class="xs" onclick="toggleVis('f-key')">Hiện</button>
+              <button class="xs" onclick="genSecret('f-key', 32)">Sinh mới</button>
+              <button class="xs" onclick="copyVal('f-key')">Copy</button>
+            </div>
+          </div>
+          <div>
+            <label>Giới hạn ổ đĩa (vd: C:,D: — trống = tất cả)</label>
+            <input id="f-drives" placeholder="Tất cả ổ đĩa">
+          </div>
+          <div>
+            <label>Tailscale HTTPS URL</label>
+            <input id="f-baseurl" placeholder="https://my-pc.tailnet.ts.net">
+          </div>
+        </div>
+        <div class="btns" style="margin-top:auto">
+          <button class="primary" onclick="saveConfig(this)">Lưu cấu hình .env</button>
+          <button onclick="enableTailscale(this)">Áp dụng Tailscale (Funnel / Serve)</button>
+        </div>
+        <div id="ts-banner" class="banner"></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <h2><span class="step">3</span> Điều khiển Server</h2>
+        <div class="ctrl-grid">
+          <button class="success" onclick="runAction('/api/start', {}, this)">Khởi chạy</button>
+          <button class="danger" onclick="runAction('/api/stop', {}, this)">Dừng</button>
+          <button onclick="runAction('/api/test', {}, this)">Test kết nối</button>
+          <button onclick="runAction('/api/autostart', {}, this)">Tự chạy Win</button>
         </div>
       </div>
-      <div>
-        <label>Giới hạn ổ đĩa (tùy chọn, vd: C:,D: — để trống = tất cả)</label>
-        <input id="f-drives" placeholder="Để trống để cho phép mọi ổ đĩa">
-      </div>
-      <div>
-        <label>Tailscale HTTPS URL (tự nhận diện)</label>
-        <input id="f-baseurl" placeholder="https://your-pc.your-tailnet.ts.net">
-      </div>
-    </div>
-    <div class="btns">
-      <button class="primary" onclick="saveConfig(this)">Lưu cấu hình .env</button>
-      <button onclick="enableTailscale(this)">Áp dụng Tailscale (Funnel / Serve)</button>
-    </div>
-    <div id="ts-banner" class="banner"></div>
-  </div>
 
-  <div class="card">
-    <h2><span class="step">4</span> Điều khiển Server &amp; Kiểm thử</h2>
-    <div class="btns" style="margin-top:0">
-      <button class="success" onclick="runAction('/api/start', {}, this)">Khởi chạy Server</button>
-      <button class="danger" onclick="runAction('/api/stop', {}, this)">Dừng Server</button>
-      <button onclick="runAction('/api/test', {}, this)">Kiểm tra kết nối (/health &amp; /mcp)</button>
-      <button onclick="runAction('/api/autostart', {}, this)">Tự chạy khi mở Windows</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2><span class="step">5</span> Kết nối AI Client (Copy 1-Click)</h2>
-    <label>MCP Endpoint URL</label>
-    <div class="input-row" style="margin-bottom:14px">
-      <div class="codebox endpoint" id="out-url" style="flex:1">Chưa phát hiện URL Tailscale...</div>
-      <button onclick="copyText(document.getElementById('out-url').textContent)">Copy URL</button>
-    </div>
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('oauth', this)">ChatGPT / Claude / Gemini Web (OAuth)</div>
-      <div class="tab" onclick="switchTab('cli', this)">Claude Code / Cursor (CLI)</div>
-    </div>
-    <div id="tab-oauth" class="codebox">1. Mở phần thêm Custom MCP Connector trên ChatGPT / Claude / Gemini.
-2. Đặt tên: mypc — Dán MCP Endpoint URL ở trên — Chọn xác thực: OAuth.
-3. Khi trình duyệt mở trang /consent, nhập Consent PIN trong Bước 2 và bấm Allow Access.
-4. Thử hỏi AI: "Hãy liệt kê các ổ đĩa trên máy tính của tôi."</div>
-    <div id="tab-cli" style="display:none">
-      <div class="codebox" id="out-cli"></div>
-      <div class="btns"><button class="sm" onclick="copyText(document.getElementById('out-cli').textContent)">Copy lệnh CLI</button></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Tiến trình &amp; Nhật ký thực thi (Console)</h2>
-    <div class="prog-wrap" id="prog-wrap">
-      <div class="prog-head">
-        <span class="prog-title" id="prog-title">Đang cài đặt...</span>
-        <span class="prog-pct" id="prog-pct">0%</span>
+      <div class="card">
+        <h2><span class="step">4</span> Kết nối AI Client (Copy 1-Click)</h2>
+        <div class="input-row">
+          <div class="codebox endpoint" id="out-url">Chưa phát hiện URL Tailscale...</div>
+          <button class="xs primary" onclick="copyText(document.getElementById('out-url').textContent)">Copy URL</button>
+        </div>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('oauth', this)">ChatGPT / Claude / Gemini (OAuth)</div>
+          <div class="tab" onclick="switchTab('cli', this)">Claude Code / Cursor (CLI)</div>
+        </div>
+        <div id="tab-oauth" class="codebox">1. Thêm Custom MCP Connector tên "mypc" với URL ở trên, chọn OAuth.
+2. Nhập Consent PIN (Bước 2) tại trang /consent → Allow Access.</div>
+        <div id="tab-cli" style="display:none">
+          <div class="input-row">
+            <div class="codebox" id="out-cli" style="flex:1"></div>
+            <button class="xs" onclick="copyText(document.getElementById('out-cli').textContent)">Copy</button>
+          </div>
+        </div>
       </div>
-      <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
-      <div class="prog-stage" id="prog-stage">Đang chuẩn bị...</div>
+
+      <div class="card grow">
+        <h2>Tiến trình &amp; Nhật ký (Console)</h2>
+        <div class="prog-wrap" id="prog-wrap">
+          <div class="prog-head">
+            <span class="prog-title" id="prog-title">Sẵn sàng</span>
+            <span class="prog-pct" id="prog-pct">0%</span>
+          </div>
+          <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
+          <div class="prog-stage" id="prog-stage">Bấm một nút cài đặt ở cột trái để theo dõi tiến trình trực tiếp.</div>
+        </div>
+        <div class="console" id="console">Sẵn sàng. Làm lần lượt từ Bước 1 → Bước 4.</div>
+      </div>
     </div>
-    <div class="console" id="console">Sẵn sàng. Hãy kiểm tra trạng thái ở trên và làm lần lượt từ Bước 1 → Bước 4.</div>
   </div>
 </div>
 
@@ -805,20 +819,20 @@ function updateClientSnippets() {
   const url = base ? `${base}/mcp` : `http://127.0.0.1:${port}/mcp`;
   document.getElementById('out-url').textContent = url;
   document.getElementById('out-cli').textContent =
-    `claude mcp add --transport http mypc ${url} \\\n  --header "Authorization: Bearer ${key}"`;
+    `claude mcp add --transport http mypc ${url} --header "Authorization: Bearer ${key}"`;
 }
 async function refreshStatus() {
   const r = await fetch('/api/status');
   const d = await r.json();
   document.getElementById('st-py').innerHTML =
-    `<span class="dot ${d.venv_ready ? 'ok' : 'warn'}"></span>Python ${d.python_version} (${d.venv_ready ? '.venv OK' : 'Chưa tạo .venv'})`;
+    `<span class="dot ${d.venv_ready ? 'ok' : 'warn'}"></span>Py ${d.python_version} (${d.venv_ready ? '.venv' : 'chưa cài'})`;
   document.getElementById('st-ts').innerHTML =
     `<span class="dot ${d.tailscale.logged_in ? 'ok' : (d.tailscale.installed ? 'warn' : 'err')}"></span>` +
-    (d.tailscale.logged_in ? (d.tailscale.dns_name || 'Đang chạy') : (d.tailscale.installed ? 'Chưa đăng nhập' : 'Chưa cài đặt'));
+    (d.tailscale.logged_in ? 'Tailscale OK' : (d.tailscale.installed ? 'TS chưa login' : 'Chưa có TS'));
   document.getElementById('st-srv').innerHTML =
-    `<span class="dot ${d.server_running ? 'ok' : 'err'}"></span>${d.server_running ? 'Đang chạy (:' + d.port + ')' : 'Đang dừng'}`;
+    `<span class="dot ${d.server_running ? 'ok' : 'err'}"></span>${d.server_running ? 'Server :' + d.port : 'Server tắt'}`;
   document.getElementById('st-env').innerHTML =
-    `<span class="dot ${d.env_exists ? 'ok' : 'warn'}"></span>${d.env_exists ? 'Đã tạo' : 'Chưa tạo'}`;
+    `<span class="dot ${d.env_exists ? 'ok' : 'warn'}"></span>${d.env_exists ? '.env OK' : 'Chưa có .env'}`;
 
   document.getElementById('f-mode').value = d.env.MYPC_MCP_TAILSCALE_MODE || 'funnel';
   document.getElementById('f-port').value = d.env.MYPC_MCP_PORT || '3080';
@@ -828,10 +842,7 @@ async function refreshStatus() {
   document.getElementById('f-baseurl').value = d.env.MYPC_MCP_BASE_URL || d.tailscale.url || '';
   updateClientSnippets();
 }
-function setProgress(show, title, pct, stage, status) {
-  const wrap = document.getElementById('prog-wrap');
-  wrap.style.display = show ? 'block' : 'none';
-  if (!show) return;
+function setProgress(title, pct, stage, status) {
   document.getElementById('prog-title').textContent = title || 'Đang thực thi...';
   document.getElementById('prog-pct').textContent = `${pct}%`;
   document.getElementById('prog-stage').textContent = stage || '';
@@ -844,13 +855,13 @@ async function pollJob(jobId, btn) {
     while (true) {
       const r = await fetch(`/api/job/${jobId}`);
       const j = await r.json();
-      setProgress(true, j.title, j.progress, j.stage, j.status);
+      setProgress(j.title, j.progress, j.stage, j.status);
       if (j.log) logMsg(j.log);
       if (j.status === 'done' || j.status === 'error') {
         await refreshStatus();
         break;
       }
-      await new Promise(res => setTimeout(res, 500));
+      await new Promise(res => setTimeout(res, 400));
     }
   } catch (e) {
     logMsg('[LỖI] ' + e);
@@ -865,7 +876,6 @@ async function runAction(path, body, btn) {
     const r = await fetch(path, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const d = await r.json();
     if (d.job_id) {
-      document.getElementById('prog-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
       await pollJob(d.job_id, btn);
       return;
     }
@@ -873,7 +883,7 @@ async function runAction(path, body, btn) {
     const banner = document.getElementById('ts-banner');
     if (d.action_url) {
       banner.style.display = 'block';
-      banner.innerHTML = `Cần thao tác trên Tailscale: <a href="${d.action_url}" target="_blank" rel="noopener">Mở liên kết Tailscale</a>, sau đó bấm làm mới.`;
+      banner.innerHTML = `Cần thao tác trên Tailscale: <a href="${d.action_url}" target="_blank" rel="noopener">Mở liên kết Tailscale</a>, sau đó bấm Làm mới.`;
     } else {
       banner.style.display = 'none';
     }
