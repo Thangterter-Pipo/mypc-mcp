@@ -1,17 +1,14 @@
 # MyPC MCP (`mypc`) — Full-Machine Windows MCP Server over Tailscale
 
-**MyPC MCP** là một máy chủ [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) chạy trên Windows (Python **FastMCP 3.x**, Streamable HTTP), cho phép AI Agent (**ChatGPT Web, Claude Code, Cursor, Gemini**, v.v.) đọc/sửa file, chạy lệnh CLI, quản lý tiến trình, thao tác Git và điều khiển Chrome CDP trên máy tính của bạn **bằng HTTPS qua Tailscale** — không cần thuê VPS, không cần mở port router, không cần cấu hình SSH tunnel phức tạp.
+**MyPC MCP** là máy chủ [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) chạy trên Windows (Python **FastMCP 3.x**, Streamable HTTP), thiết kế chuyên biệt để **các AI phiên bản Web (ChatGPT Web, Claude Web, Gemini Web)** kết nối trực tiếp vào máy tính Windows của bạn qua **Tailscale Funnel (HTTPS)** — không cần thuê VPS, không cần mở port router.
 
 ## Tính năng chính
 
 - **50+ công cụ toàn máy (Full-Machine):** Duyệt ổ đĩa/thư mục, đọc file lớn theo dòng, `patch_file` an toàn kèm kiểm tra hash, `grep`, nén/giải nén chống zip-slip, chạy CLI (`exec_command`), quản lý tiến trình nền, `pytest`, Git cục bộ và Chrome DevTools Protocol (`localhost:9222`).
-- **Kết nối từ xa siêu gọn bằng Tailscale:**
-  - **Tailscale Funnel** (`tailscale funnel --bg 3080`): Tạo URL HTTPS công khai `https://<tên-máy>.<tailnet>.ts.net/mcp` có chứng chỉ TLS tự động — dùng cho **ChatGPT Web, Claude Web, Gemini Web**.
-  - **Tailscale Serve** (`tailscale serve --bg 3080`): Chỉ mở HTTPS riêng tư trong mạng **Tailnet** của bạn — dùng cho **Claude Code / Cursor** từ laptop khác.
+- **Kết nối AI Web siêu gọn qua Tailscale Funnel:** `tailscale funnel --bg 3080` tự động tạo URL HTTPS `https://<tên-máy>.<tailnet>.ts.net/mcp` có chứng chỉ TLS cho ChatGPT Web, Claude Web và Gemini Web.
 - **Bảo mật nhiều lớp:**
   - Chạy đúng quyền tài khoản Windows hiện tại (không leo thang đặc quyền).
   - Xác thực **OAuth 2.1 + PKCE + DCR** kèm trang `/consent` yêu cầu nhập **PIN chủ máy** (`MYPC_MCP_CONSENT_PIN`) và allowlist `redirect_uri`.
-  - Hỗ trợ song song **Bearer API Key** tĩnh.
   - Ghi **Audit Log** JSONL tại `%LOCALAPPDATA%\MyPCMcp\audit.jsonl` (tự động che toàn bộ token/mật khẩu).
 
 ## Kiến trúc kết nối

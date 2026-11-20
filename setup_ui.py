@@ -689,22 +689,10 @@ HTML_PAGE = r"""<!doctype html>
       </div>
 
       <div class="card grow">
-        <h2><span class="step">2</span> Cấu hình bảo mật &amp; Chế độ Tailscale (.env)</h2>
+        <h2><span class="step">2</span> Cấu hình kết nối AI Web (.env &amp; Tailscale Funnel)</h2>
         <div class="form-grid">
-          <div>
-            <label>Chế độ Tailscale</label>
-            <select id="f-mode">
-              <option value="funnel">Funnel — Công khai (ChatGPT/Claude/Gemini Web)</option>
-              <option value="serve">Serve — Nội bộ Tailnet (Claude Code/Cursor)</option>
-              <option value="none">Local only — Chỉ 127.0.0.1</option>
-            </select>
-          </div>
-          <div>
-            <label>Cổng cục bộ (Port)</label>
-            <input id="f-port" type="number" value="3080">
-          </div>
           <div class="span2">
-            <label>Consent PIN (nhập khi duyệt OAuth)</label>
+            <label>Consent PIN (mã bảo mật nhập khi duyệt ChatGPT / Claude / Gemini Web)</label>
             <div class="input-row">
               <input id="f-pin" type="password" placeholder="Nhập PIN mạnh...">
               <button class="xs" onclick="toggleVis('f-pin')">Hiện</button>
@@ -712,27 +700,22 @@ HTML_PAGE = r"""<!doctype html>
               <button class="xs" onclick="copyVal('f-pin')">Copy</button>
             </div>
           </div>
-          <div class="span2">
-            <label>Static Bearer API Key</label>
-            <div class="input-row">
-              <input id="f-key" type="password" placeholder="Bearer API key...">
-              <button class="xs" onclick="toggleVis('f-key')">Hiện</button>
-              <button class="xs" onclick="genSecret('f-key', 32)">Sinh mới</button>
-              <button class="xs" onclick="copyVal('f-key')">Copy</button>
-            </div>
+          <div>
+            <label>Cổng cục bộ (Port)</label>
+            <input id="f-port" type="number" value="3080">
           </div>
           <div>
             <label>Giới hạn ổ đĩa (vd: C:,D: — trống = tất cả)</label>
             <input id="f-drives" placeholder="Tất cả ổ đĩa">
           </div>
-          <div>
-            <label>Tailscale HTTPS URL</label>
+          <div class="span2">
+            <label>Tailscale Funnel HTTPS URL (tự nhận diện sau khi đăng nhập)</label>
             <input id="f-baseurl" placeholder="https://my-pc.tailnet.ts.net">
           </div>
         </div>
         <div class="btns" style="margin-top:auto">
           <button class="primary" onclick="saveConfig(this)">Lưu cấu hình .env</button>
-          <button onclick="enableTailscale(this)">Áp dụng Tailscale (Funnel / Serve)</button>
+          <button class="success" onclick="enableTailscale(this)">Bật Tailscale Funnel (HTTPS cho AI Web)</button>
         </div>
         <div id="ts-banner" class="banner"></div>
       </div>
@@ -750,23 +733,14 @@ HTML_PAGE = r"""<!doctype html>
       </div>
 
       <div class="card">
-        <h2><span class="step">4</span> Kết nối AI Client (Copy 1-Click)</h2>
+        <h2><span class="step">4</span> Kết nối AI Web (ChatGPT / Claude / Gemini)</h2>
         <div class="input-row">
-          <div class="codebox endpoint" id="out-url">Chưa phát hiện URL Tailscale...</div>
+          <div class="codebox endpoint" id="out-url">Chưa phát hiện URL Tailscale Funnel...</div>
           <button class="xs primary" onclick="copyText(document.getElementById('out-url').textContent)">Copy URL</button>
         </div>
-        <div class="tabs">
-          <div class="tab active" onclick="switchTab('oauth', this)">ChatGPT / Claude / Gemini (OAuth)</div>
-          <div class="tab" onclick="switchTab('cli', this)">Claude Code / Cursor (CLI)</div>
-        </div>
-        <div id="tab-oauth" class="codebox">1. Thêm Custom MCP Connector tên "mypc" với URL ở trên, chọn OAuth.
-2. Nhập Consent PIN (Bước 2) tại trang /consent → Allow Access.</div>
-        <div id="tab-cli" style="display:none">
-          <div class="input-row">
-            <div class="codebox" id="out-cli" style="flex:1"></div>
-            <button class="xs" onclick="copyText(document.getElementById('out-cli').textContent)">Copy</button>
-          </div>
-        </div>
+        <div class="codebox">1. Mở ChatGPT / Claude / Gemini Web → Thêm Custom MCP Connector.
+2. Đặt tên: mypc — Dán URL ở trên — Chọn xác thực: OAuth.
+3. Khi trình duyệt mở trang /consent, nhập Consent PIN (Bước 2) → Allow Access.</div>
       </div>
 
       <div class="card grow">
@@ -806,20 +780,10 @@ function genSecret(id, bytes) {
   const el = document.getElementById(id);
   el.value = s; el.type = 'text';
 }
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-oauth').style.display = name === 'oauth' ? 'block' : 'none';
-  document.getElementById('tab-cli').style.display = name === 'cli' ? 'block' : 'none';
-}
 function updateClientSnippets() {
   const base = (document.getElementById('f-baseurl').value || '').replace(/\/+$/, '');
-  const port = document.getElementById('f-port').value || '3080';
-  const key = document.getElementById('f-key').value || '<MYPC_MCP_API_KEY>';
-  const url = base ? `${base}/mcp` : `http://127.0.0.1:${port}/mcp`;
+  const url = base ? `${base}/mcp` : 'Chưa phát hiện URL Tailscale Funnel (hãy đăng nhập Tailscale ở Bước 1)';
   document.getElementById('out-url').textContent = url;
-  document.getElementById('out-cli').textContent =
-    `claude mcp add --transport http mypc ${url} --header "Authorization: Bearer ${key}"`;
 }
 async function refreshStatus() {
   const r = await fetch('/api/status');
@@ -834,10 +798,8 @@ async function refreshStatus() {
   document.getElementById('st-env').innerHTML =
     `<span class="dot ${d.env_exists ? 'ok' : 'warn'}"></span>${d.env_exists ? '.env OK' : 'Chưa có .env'}`;
 
-  document.getElementById('f-mode').value = d.env.MYPC_MCP_TAILSCALE_MODE || 'funnel';
   document.getElementById('f-port').value = d.env.MYPC_MCP_PORT || '3080';
   document.getElementById('f-pin').value = d.env.MYPC_MCP_CONSENT_PIN || '';
-  document.getElementById('f-key').value = d.env.MYPC_MCP_API_KEY || '';
   document.getElementById('f-drives').value = d.env.MYPC_MCP_ALLOWED_DRIVES || '';
   document.getElementById('f-baseurl').value = d.env.MYPC_MCP_BASE_URL || d.tailscale.url || '';
   updateClientSnippets();
@@ -896,17 +858,16 @@ async function runAction(path, body, btn) {
 }
 function saveConfig(btn) {
   runAction('/api/save-env', {
-    MYPC_MCP_TAILSCALE_MODE: document.getElementById('f-mode').value,
+    MYPC_MCP_TAILSCALE_MODE: 'funnel',
     MYPC_MCP_PORT: document.getElementById('f-port').value,
     MYPC_MCP_CONSENT_PIN: document.getElementById('f-pin').value,
-    MYPC_MCP_API_KEY: document.getElementById('f-key').value,
     MYPC_MCP_ALLOWED_DRIVES: document.getElementById('f-drives').value,
     MYPC_MCP_BASE_URL: document.getElementById('f-baseurl').value,
   }, btn);
 }
 function enableTailscale(btn) {
   runAction('/api/tailscale', {
-    mode: document.getElementById('f-mode').value,
+    mode: 'funnel',
     port: parseInt(document.getElementById('f-port').value || '3080', 10),
   }, btn);
 }
