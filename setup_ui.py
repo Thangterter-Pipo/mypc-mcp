@@ -602,11 +602,12 @@ HTML_PAGE = r"""<!doctype html>
   .dot.ok { background: var(--ok); box-shadow: 0 0 7px var(--ok); }
   .dot.warn { background: var(--warn); }
   .dot.err { background: var(--err); }
-  .main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 10px; }
-  .col { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 11px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 10px; }
+  .col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 11px; padding: 10px 13px; display: flex; flex-direction: column; gap: 7px; }
   .card.grow { flex: 1; min-height: 0; }
-  .card h2 { margin: 0; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .card h2 { margin: 0; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
   .step { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; background: rgba(59,130,246,.18); color: #60a5fa; font-size: 11.5px; font-weight: 700; flex-shrink: 0; }
   .row-setup { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; background: var(--input); border: 1px solid var(--border); border-radius: 8px; flex-wrap: wrap; }
   .row-setup .lbl { font-weight: 600; font-size: 12.5px; }
@@ -689,7 +690,7 @@ HTML_PAGE = r"""<!doctype html>
         </div>
       </div>
 
-      <div class="card grow">
+      <div class="card">
         <h2><span class="step">2</span> Cấu hình kết nối AI Web (.env &amp; Tailscale Funnel)</h2>
         <div class="form-grid">
           <div class="span2">
@@ -714,26 +715,23 @@ HTML_PAGE = r"""<!doctype html>
             <input id="f-baseurl" placeholder="https://my-pc.tailnet.ts.net">
           </div>
         </div>
-        <div class="btns" style="margin-top:auto">
+        <div class="btns">
           <button class="primary" onclick="saveConfig(this)">Lưu cấu hình .env</button>
           <button class="success" onclick="enableTailscale(this)">Bật Tailscale Funnel (HTTPS cho AI Web)</button>
         </div>
         <div id="ts-banner" class="banner"></div>
       </div>
-    </div>
 
-    <div class="col">
       <div class="card">
         <h2><span class="step">3</span> Điều khiển Server</h2>
         <div class="ctrl-grid">
-          <button class="success" onclick="runAction('/api/start', {}, this)">Khởi chạy</button>
-          <button class="danger" onclick="runAction('/api/stop', {}, this)">Dừng</button>
+          <button id="btn-toggle-srv" class="success" onclick="toggleServer(this)">Khởi chạy Server</button>
           <button onclick="runAction('/api/test', {}, this)">Test kết nối</button>
           <button title="Tự động chạy ngầm MyPC MCP mỗi khi bạn mở máy và đăng nhập Windows" onclick="runAction('/api/autostart', {}, this)">Khởi động MCP cùng Windows</button>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card grow">
         <h2><span class="step">4</span> Kết nối AI Web (ChatGPT / Claude / Gemini)</h2>
         <div class="input-row">
           <div class="codebox endpoint" id="out-url">Chưa phát hiện URL Tailscale Funnel...</div>
@@ -741,20 +739,25 @@ HTML_PAGE = r"""<!doctype html>
         </div>
         <div class="codebox">1. Mở ChatGPT / Claude / Gemini Web → Thêm Custom MCP Connector.
 2. Đặt tên: mypc — Dán URL ở trên — Chọn xác thực: OAuth.
-3. Khi trình duyệt mở trang /consent, nhập Consent PIN (Bước 2) → Allow Access.</div>
+3. Nhập Consent PIN (Bước 2) tại trang /consent → Allow Access.</div>
       </div>
+    </div>
 
+    <div class="col">
       <div class="card grow">
-        <h2>Tiến trình &amp; Nhật ký (Console)</h2>
+        <div class="card-head">
+          <h2>Tiến trình &amp; Nhật ký (Console)</h2>
+          <button class="xs" onclick="logMsg('Đã xóa nhật ký.')">Xóa log</button>
+        </div>
         <div class="prog-wrap" id="prog-wrap">
           <div class="prog-head">
             <span class="prog-title" id="prog-title">Sẵn sàng</span>
             <span class="prog-pct" id="prog-pct">0%</span>
           </div>
           <div class="prog-track"><div class="prog-bar" id="prog-bar"></div></div>
-          <div class="prog-stage" id="prog-stage">Bấm một nút cài đặt ở cột trái để theo dõi tiến trình trực tiếp.</div>
+          <div class="prog-stage" id="prog-stage">Bấm một nút cài đặt bên trái để theo dõi tiến trình trực tiếp.</div>
         </div>
-        <div class="console" id="console">Sẵn sàng. Làm lần lượt từ Bước 1 → Bước 4.</div>
+        <div class="console" id="console">Sẵn sàng. Làm lần lượt từ Bước 1 → Bước 4 ở cột bên trái.</div>
       </div>
     </div>
   </div>
@@ -786,9 +789,19 @@ function updateClientSnippets() {
   const url = base ? `${base}/mcp` : 'Chưa phát hiện URL Tailscale Funnel (hãy đăng nhập Tailscale ở Bước 1)';
   document.getElementById('out-url').textContent = url;
 }
+let isServerRunning = false;
+function toggleServer(btn) {
+  runAction(isServerRunning ? '/api/stop' : '/api/start', {}, btn);
+}
 async function refreshStatus() {
   const r = await fetch('/api/status');
   const d = await r.json();
+  isServerRunning = !!d.server_running;
+  const toggleBtn = document.getElementById('btn-toggle-srv');
+  if (toggleBtn) {
+    toggleBtn.textContent = isServerRunning ? 'Dừng Server' : 'Khởi chạy Server';
+    toggleBtn.className = isServerRunning ? 'danger' : 'success';
+  }
   document.getElementById('st-py').innerHTML =
     `<span class="dot ${d.venv_ready ? 'ok' : 'warn'}"></span>Py ${d.python_version} (${d.venv_ready ? '.venv' : 'chưa cài'})`;
   document.getElementById('st-ts').innerHTML =
