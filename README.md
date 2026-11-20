@@ -26,7 +26,11 @@ Tailscale Funnel / Serve (https://<machine>.<tailnet>.ts.net)
 127.0.0.1:3080/mcp  ← MyPC MCP Server (Windows)
 ```
 
-## Cài đặt tự động bằng AI Agent (Khuyên dùng)
+## Cách 1 — Giao diện cài đặt trực quan (Dễ nhất)
+
+Chỉ cần nhấp đúp **`setup_ui.bat`** (hoặc chạy `python setup_ui.py`). Trình duyệt sẽ tự mở bảng điều khiển cục bộ tại `http://127.0.0.1:3099` (không cần cài thư viện trước) để bạn bấm từng nút: cài `.venv`, cấu hình PIN/API Key, bật Tailscale Funnel/Serve, khởi chạy/kiểm thử server và copy sẵn URL `/mcp` cho AI Client.
+
+## Cách 2 — Cài đặt tự động bằng AI Agent
 
 Nếu bạn đang dùng **Claude Code, Cursor, Windsurf, Antigravity, Codex CLI hoặc Gemini CLI**, không cần cài tay — chỉ cần mở thư mục dự án và gửi cho AI câu lệnh sau (xem chi tiết tại [AI_SETUP.md](AI_SETUP.md)):
 
