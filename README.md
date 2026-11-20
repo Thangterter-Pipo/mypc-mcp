@@ -32,8 +32,6 @@ Các AI Agent chạy trên máy đã có thể thao tác trực tiếp, nhưng c
 
 ## Cài đặt nhanh
 
-### Cách 1 — Giao diện trực quan (Khuyên dùng)
-
 1. Tải mã nguồn về máy:
    ```bash
    git clone https://github.com/Thangterter-Pipo/mypc-mcp.git
@@ -45,28 +43,6 @@ Các AI Agent chạy trên máy đã có thể thao tác trực tiếp, nhưng c
    - **Bước 2:** Kiểm tra/sinh **Consent PIN**, bấm **Lưu `.env`** → **Bật Tailscale Funnel (HTTPS)**.
    - **Bước 3:** Bấm **Khởi chạy Server** và **Test kết nối** (có thể bấm thêm **Khởi động MCP cùng Windows**).
    - **Bước 4:** Bấm **Copy URL** và dán vào mục thêm **Custom MCP Connector** (chọn **OAuth**) trên ChatGPT / Claude / Gemini Web.
-
-### Cách 2 — Giao cho AI Agent tự cài đặt
-
-Mở thư mục dự án bằng AI Agent có quyền chạy lệnh (Claude Code, Cursor, Windsurf, Antigravity, Codex CLI, Gemini CLI...) và dán câu lệnh sau (xem chi tiết tại [AI_SETUP.md](AI_SETUP.md)):
-
-```text
-Hãy đọc file AI_SETUP.md và tự động cài đặt, cấu hình Tailscale, chạy kiểm thử và bàn giao cấu hình MyPC MCP trên máy tính này cho tôi.
-```
-
-### Cách 3 — Cài đặt bằng dòng lệnh (PowerShell)
-
-```powershell
-# 1. Tạo .venv, cài thư viện và tự sinh .env (API Key + Consent PIN)
-.\scripts\install.ps1
-
-# 2. Bật Tailscale Funnel (HTTPS công khai có xác thực OAuth + PIN)
-.\scripts\tailscale_setup.ps1 -Mode funnel
-
-# 3. Khởi chạy server chạy ngầm
-.\start_mypc.bat start
-.\start_mypc.bat status
-```
 
 ---
 
